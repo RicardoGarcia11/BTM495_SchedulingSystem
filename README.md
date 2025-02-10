@@ -1,4 +1,4 @@
-# BTM495_SchedulingSystem
+# BTM 495 Scheduling System
 # Restaurant Employee Scheduling System
 A scheduling system for restaurant employees to manage their work shifts. Service Staff can set availability, request time off, swap shifts, and communicate with other employees. Managers can assign shifts based on employee availability and approve/reject requests.
 
