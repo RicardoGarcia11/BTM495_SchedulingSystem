@@ -1,28 +1,8 @@
 """This file defines the SQLAlchemy models for the Flask application.
-It maps database tables to Python classes, enabling ORM-based interactions
-instead of raw SQL queries.
-
-Each class represents a table in the PostgreSQL database, and relationships
+Each class represents a table in the SQL database, and relationships
 between tables are managed using SQLAlchemy's ORM features.
 
-Tables Implemented:
-- Employee: Stores employee details.
-- Account: Links employee accounts with login credentials.
-- Shift: Represents work shifts.
-- Schedule: Defines weekly schedules.
-- ShiftEmployee: Many-to-many relationship between employees and shifts.
-- ScheduleShift: Many-to-many relationship between schedules and shifts.
-- Message: Stores messages exchanged between employees.
-- ShiftSwap: Tracks requests for swapping shifts between employees.
-- TimeOff: Manages employee time-off requests.
-
-Usage:
-- This file should be imported into the main Flask app.
-- The database connection should be initialized in `app.py` using `db.init_app(app)`.
-- Run `db.create_all()` to generate tables in the database.
-
 """
-
 
 from flask_sqlalchemy import SQLAlchemy
 
