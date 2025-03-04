@@ -1,0 +1,64 @@
+FOR MACBOOK
+
+Install python
+- Open your terminal WINDOW
+- Paste: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+- After installing paste: 
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+source ~/.zshrc
+- Paste: brew install python@3.11
+- Paste to verify it is installed: python3 --version
+* You should get this output: Python 3.11.11
+
+
+FOR WINDOWS
+
+Install python
+- Go to python's official website and download latest Python 3.11 installer for Windows.
+- Check box that says:  "Add Python to PATH" (important!)
+- Click Install Now
+- Open Command Prompt (cmd) or Powershell and run: python --version
+*You should see 3.11.11
+
+
+Step 2. download Visual Studio Code
+
+Step 3. open visual studio code and connect to your github account
+
+* You might need to install 'git'. Just follow instructions on github.
+
+Step 4. Look at left tool bar in visual studio code and click on the third one. 
+
+- Click button that says 'clone repository' and copy github repository url
+- Save the project somewhere on your computer you can easily access.
+
+IMPORTANT DOWNLOADS
+
+Step 5.
+once you're in the project open the terminal in visual studio code.
+
+it should say the name of our project: BTM495_SCHEDULINGSYSTEM
+
+run this command in the terminal: python3 -m venv .venv
+
+after this:
+run this command for macbook:source .venv/bin/activate
+run this command for windows: .venv\Scripts\Activate.ps1
+
+In the terminal you should see (.venv) your_name BTM495_SCHEDULINGSYSTEM % 
+
+Step 6. Download flask and sqlalchemy
+
+still in terminal paste: pip install flask flask-sqlalchemy mysql-connector-python python-dotenv
+
+paste this in terminal: python -c "import flask, flask_sqlalchemy; print('Flask and SQLAlchemy installed successfully!')"
+
+
+Step 7: Running App
+
+in terminal: cd frontend
+in terminal: python3 app.py
+
+Step 8: To view local database
+- On left menu bar of visual studio code go to extensions and search 'SQLlite viewer' and install
+- In frontend/instance/scheduling.db you can double click on it and it will open up the database
