@@ -59,6 +59,9 @@ Step 7: Running App
 in terminal: cd frontend
 in terminal: python3 app.py
 
+This will generate a local host link that u can copy in your browser like this:  http://127.0.0.1:5000
+
 Step 8: To view local database
 - On left menu bar of visual studio code go to extensions and search 'SQLlite viewer' and install
 - In frontend/instance/scheduling.db you can double click on it and it will open up the database
+
