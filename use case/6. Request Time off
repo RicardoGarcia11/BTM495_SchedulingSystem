@@ -1,0 +1,12 @@
+Service Staff signs in.
+Service Staff accesses the “Time-Off” section.
+System displays a request form.
+Service Staff selects the type of leave (i.e.: vacation, sick leave), specifies the dates 
+Service Staff submits the form.
+System sends a notification to the manager.
+Manager reviews the form.
+System sends a notification to the staff.
+
+Alternate/Exceptional Flows:
+9a. If the manager approves the request, the system updates the schedule to reflect the time off and sends a confirmation to the staff.
+9b. If the manager denies the request, the system sends a rejection notification to the staff

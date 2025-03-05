@@ -1,0 +1,8 @@
+Service Staff signs in. 
+Service Staff logs work hours.
+System validates the ID number.
+System updates the attendance log.
+
+Alternate/Exceptional Flows:
+2a. The staff can choose to clock in or out.
+6a. If the ID number doesn’t match with the one on the schedule, the system sends an alert to the manager.
