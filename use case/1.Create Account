@@ -1,6 +1,6 @@
 User opens the application.
 System displays the starting screen.
-User selects the option to create an account.
+User clicks on "Create an Account" button.
 System displays the “Create Account” form.
 User inputs their email.
 System verifies that the email is valid.

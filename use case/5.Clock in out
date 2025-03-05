@@ -1,5 +1,5 @@
 Service Staff signs in. 
-Service Staff logs work hours.
+Service Staff clicks on "Log Work Hours" button.
 System validates the ID number.
 System updates the attendance log.
 
