@@ -10,7 +10,7 @@ CREATE TABLE public.user (
 CREATE TABLE public.account (
     email INTEGER PRIMARY KEY, -- Use employee_id as the unique identifier
     password VARCHAR(255) NOT NULL, 
-    CONSTRAINT fk_account_employee FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id)
+    CONSTRAINT fk_account_employee FOREIGN KEY (employee_id) REFERENCES public.user(employee_id)
 );
 
 -- Shift table (represents a specific shift on a specific day)
@@ -20,7 +20,7 @@ CREATE TABLE public.shift (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,   
     total_hours DECIMAL NOT NULL, -- Duration in hours
-    date DATE NOT NULL,       -- Date of the shift 
+    shift_database LIST NOT NULL, -- IS THIS ATTRIBUTE VALID?
     CONSTRAINT check_hours CHECK (total_hours = EXTRACT(EPOCH FROM (end_time - start_time)) / 3600) -- Ensure total_hours matches time duration
 );
 
@@ -33,8 +33,8 @@ CREATE TABLE public.schedule (
     CONSTRAINT check_weekly_dates CHECK (end_date = start_date + INTERVAL '6 days') -- Ensure 7-day week
 );
 
--- Shift_Employee bridge table (many-to-many relationship between User and Shift)
-CREATE TABLE public.shift_user (
+-- Shift_ServiceStaff bridge table (many-to-many relationship between User and Shift)
+CREATE TABLE public.Shift_servicestaff (
     shift_id INTEGER NOT NULL,
     employee_id INTEGER NOT NULL,
     PRIMARY KEY (shift_id, employee_id), -- Composite Key
@@ -65,9 +65,9 @@ CREATE TABLE public.message (
 -- Shift Swap table
 CREATE TABLE public.shift_swap (
     swap_id SERIAL PRIMARY KEY,
-    requesting_emp INTEGER NOT NULL,
-    receiving_emp INTEGER NOT NULL,
-    original_shift INTEGER NOT NULL,
+    requesting_servicestaff INTEGER NOT NULL,
+    receiving_servicestaff INTEGER NOT NULL,
+    original_shift INTEGER NOT NULL, --IS THIS AN INTEGER OR CLASS OF SHIFT?
     requested_shift INTEGER NOT NULL,
     CONSTRAINT fk_requesting_swap_employee FOREIGN KEY (requesting_emp) REFERENCES public.user(employee_id),
     CONSTRAINT fk_receiving_swap_employee FOREIGN KEY (receiving_emp) REFERENCES public.user(employee_id),
