@@ -1,5 +1,6 @@
 CREATE DATABASE restaurantdatabase;
 USE  restaurantdatabase;
+
 -- User table
 CREATE TABLE user (
     employee_id INT PRIMARY KEY AUTO_INCREMENT, 
@@ -53,7 +54,7 @@ CREATE TABLE shift (
     shift_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,   
-    total_hours DECIMAL NOT NULL, --Duration of the total hours of shift during the week
+    total_hours DECIMAL NOT NULL, -- Duration of the total hours of shift during the week
     employee_id INT,
     FOREIGN KEY (employee_id) REFERENCES user (employee_id)
     );
