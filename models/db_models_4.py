@@ -1,45 +1,109 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 
-# Initialize Flask app
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scheduling_system.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize SQLAlchemy
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
-# Request model
-class Request(db.Model):
-    __tablename__ = 'request'
-    request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
-    request_type = db.Column(db.String(50), nullable=False)
-    request_date = db.Column(db.Date, nullable=False)
-    status = db.Column(db.String(50), default='Pending')
+# ========== Models and Methods ==========
 
-    @staticmethod
-    def createRequest(employee_id, request_type, request_date):
-        new_request = Request(
-            employee_id=employee_id,
-            request_type=request_type,
-            request_date=request_date
-        )
-        db.session.add(new_request)
+class User(db.Model):
+    __tablename__ = 'user'
+    employee_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    employee_name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    user_type = db.Column(db.Enum('Manager', 'Service_Staff'), nullable=False)
+
+    messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
+    messages_received = db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient', lazy=True)
+
+    def register(self):
+        db.session.add(self)
         db.session.commit()
-        return new_request
 
     @staticmethod
-    def getRequest(request_id):
-        return Request.query.get(request_id)
+    def login(email, password):
+        return Account.query.filter_by(email=email, password=password).first()
 
-# Association table for Schedule and Shift
-schedule_shift = db.Table(
-    'schedule_shift',
-    db.Column('schedule_id', db.Integer, db.ForeignKey('schedule.schedule_id'), primary_key=True),
-    db.Column('shift_id', db.Integer, db.ForeignKey('shift.shift_id'), primary_key=True)
-)
+    def sendMessage(self, recipient_id):
+        message = Message(
+            sender_id=self.employee_id,
+            recipient_id=recipient_id,
+            latest_date=date.today(),
+            latest_time=datetime.now()
+        )
+        db.session.add(message)
+        db.session.commit()
 
-# Schedule model
+class Message(db.Model):
+    __tablename__ = 'message'
+    message_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
+    latest_date = db.Column(db.Date, nullable=False)
+    latest_time = db.Column(db.DateTime, nullable=False)
+
+class Account(db.Model):
+    __tablename__ = 'account'
+    email = db.Column(db.String(255), primary_key=True)
+    password = db.Column(db.String(255), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), unique=True)
+
+    def getID(self):
+        return self.employee_id
+
+    def verifyLogin(self, password):
+        return self.password == password
+
+    def verifyUserType(self):
+        user = User.query.get(self.employee_id)
+        return user.user_type if user else None
+
+class Manager(db.Model):
+    __tablename__ = 'manager'
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), primary_key=True)
+
+    def assignShift(self, shift):
+        db.session.add(shift)
+        db.session.commit()
+
+    def createSchedule(self, start_date, end_date, total_hours):
+        return Schedule.createSchedule(start_date, end_date, total_hours)
+
+    def approveLeave(self, request_id):
+        req = Request.query.get(request_id)
+        if req:
+            req.status = 'Approved'
+            db.session.commit()
+
+class ServiceStaff(db.Model):
+    __tablename__ = 'service_staff'
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), primary_key=True)
+    availability = db.Column(db.String(50), nullable=True)
+
+    def createAvailability(self, availability):
+        self.availability = availability
+        db.session.commit()
+
+    def submitAvailability(self):
+        db.session.commit()
+
+    def createLeaveRequest(self, start_date, end_date, hours):
+        return TimeOff.createTimeOff(start_date, end_date, hours)
+
+    def approveSwap(self, swap_id):
+        pass  # Swap logic goes here
+
+    def getShift(self):
+        return Shift.query.filter_by(employee_id=self.employee_id).all()
+
+    def logWorkHours(self, log):
+        db.session.add(log)
+        db.session.commit()
+
 class Schedule(db.Model):
     __tablename__ = 'schedule'
     schedule_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -51,10 +115,6 @@ class Schedule(db.Model):
     def getSchedule(schedule_id):
         return Schedule.query.get(schedule_id)
 
-    def getShiftDB(self):
-        shifts = Shift.query.join(schedule_shift).filter(schedule_shift.c.schedule_id == self.schedule_id).all()
-        return shifts
-
     def updateSchedule(self, start_date, end_date, total_hours):
         self.start_date = start_date
         self.end_date = end_date
@@ -63,16 +123,11 @@ class Schedule(db.Model):
 
     @staticmethod
     def createSchedule(start_date, end_date, total_hours):
-        new_schedule = Schedule(
-            start_date=start_date,
-            end_date=end_date,
-            total_hours=total_hours
-        )
-        db.session.add(new_schedule)
+        schedule = Schedule(start_date=start_date, end_date=end_date, total_hours=total_hours)
+        db.session.add(schedule)
         db.session.commit()
-        return new_schedule
+        return schedule
 
-# Shift model
 class Shift(db.Model):
     __tablename__ = 'shift'
     shift_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -89,23 +144,36 @@ class Shift(db.Model):
 
     @staticmethod
     def checkShiftAvailability(shift_id):
-        shift = Shift.query.get(shift_id)
-        return shift is not None
+        return Shift.query.get(shift_id) is not None
 
     @staticmethod
     def createShift(shift_date, start_time, end_time, total_hours, employee_id):
-        new_shift = Shift(
+        shift = Shift(
             shift_date=shift_date,
             start_time=start_time,
             end_time=end_time,
             total_hours=total_hours,
             employee_id=employee_id
         )
-        db.session.add(new_shift)
+        db.session.add(shift)
         db.session.commit()
-        return new_shift
+        return shift
 
-# TimeOff model
+class Request(db.Model):
+    __tablename__ = 'request'
+    request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
+    request_type = db.Column(db.String(50), nullable=False)
+    request_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(50), default='Pending')
+
+    @staticmethod
+    def createRequest(employee_id, request_type, request_date):
+        req = Request(employee_id=employee_id, request_type=request_type, request_date=request_date)
+        db.session.add(req)
+        db.session.commit()
+        return req
+
 class TimeOff(db.Model):
     __tablename__ = 'time_off'
     time_off_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -115,22 +183,15 @@ class TimeOff(db.Model):
 
     @staticmethod
     def displayForm():
-        return {
-            'fields': ['start_leave_date', 'end_leave_date', 'total_leave_hours']
-        }
+        return {'fields': ['start_leave_date', 'end_leave_date', 'total_leave_hours']}
 
     @staticmethod
     def createTimeOff(start_leave_date, end_leave_date, total_leave_hours):
-        new_time_off = TimeOff(
-            start_leave_date=start_leave_date,
-            end_leave_date=end_leave_date,
-            total_leave_hours=total_leave_hours
-        )
-        db.session.add(new_time_off)
+        time_off = TimeOff(start_leave_date=start_leave_date, end_leave_date=end_leave_date, total_leave_hours=total_leave_hours)
+        db.session.add(time_off)
         db.session.commit()
-        return new_time_off
+        return time_off
 
-# ClockRecord model
 class ClockRecord(db.Model):
     __tablename__ = 'clock_record'
     log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -150,12 +211,14 @@ class ClockRecord(db.Model):
 
     @staticmethod
     def createClockRecord(clockIN_time, clockOUT_time, total_staff_hours, employee_id):
-        new_record = ClockRecord(
-            clockIN_time=clockIN_time,
-            clockOUT_time=clockOUT_time,
-            total_staff_hours=total_staff_hours,
-            employee_id=employee_id
-        )
-        db.session.add(new_record)
+        record = ClockRecord(clockIN_time=clockIN_time, clockOUT_time=clockOUT_time, total_staff_hours=total_staff_hours, employee_id=employee_id)
+        db.session.add(record)
         db.session.commit()
-        return new_record
+        return record
+
+# Many-to-many schedule/shift association table
+schedule_shift = db.Table(
+    'schedule_shift',
+    db.Column('schedule_id', db.Integer, db.ForeignKey('schedule.schedule_id'), primary_key=True),
+    db.Column('shift_id', db.Integer, db.ForeignKey('shift.shift_id'), primary_key=True)
+)
