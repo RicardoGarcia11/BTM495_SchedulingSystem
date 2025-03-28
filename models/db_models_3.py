@@ -277,4 +277,3 @@ def request_time_off():
         'time_off_id': time_off.time_off_id
     })
 
-
