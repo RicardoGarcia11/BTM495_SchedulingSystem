@@ -8,13 +8,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# ========== Models and Methods ==========
+schedule_shift = db.Table(
+    'schedule_shift',
+    db.Column('schedule_id', db.Integer, db.ForeignKey('schedule.schedule_id'), primary_key=True),
+    db.Column('shift_id', db.Integer, db.ForeignKey('shift.shift_id'), primary_key=True)
+)
 
 class User(db.Model):
     __tablename__ = 'user'
     employee_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     employee_name = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
     user_type = db.Column(db.Enum('Manager', 'Service_Staff'), nullable=False)
 
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
@@ -28,12 +31,13 @@ class User(db.Model):
     def login(email, password):
         return Account.query.filter_by(email=email, password=password).first()
 
-    def sendMessage(self, recipient_id):
+    def sendMessage(self, recipient_id, text_message):
         message = Message(
             sender_id=self.employee_id,
             recipient_id=recipient_id,
             latest_date=date.today(),
-            latest_time=datetime.now()
+            latest_time=datetime.now(),
+            message_text = text_message
         )
         db.session.add(message)
         db.session.commit()
@@ -45,12 +49,28 @@ class Message(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
     latest_date = db.Column(db.Date, nullable=False)
     latest_time = db.Column(db.DateTime, nullable=False)
+    message_text = db.Column(db.Text, nullable=False)
+  
+    def loadChatHistory(self, other_user_id):
+        messages = Message.query.filter(
+        ((Message.sender_id == self.employee_id) & (Message.recipient_id == other_user_id)) |
+        ((Message.sender_id == other_user_id) & (Message.recipient_id == self.employee_id))
+    ).order_by(Message.latest_time).all()
+    
+        return messages
+
 
 class Account(db.Model):
     __tablename__ = 'account'
     email = db.Column(db.String(255), primary_key=True)
     password = db.Column(db.String(255), nullable=False)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), unique=True)
+    manager_code = db.Column(db.Integer)
+
+    @property
+    def user_type(self):
+        user = User.query.get(self.employee_id)
+        return user.user_type if user else None
 
     def getID(self):
         return self.employee_id
@@ -66,9 +86,13 @@ class Manager(db.Model):
     __tablename__ = 'manager'
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), primary_key=True)
 
-    def assignShift(self, shift):
-        db.session.add(shift)
-        db.session.commit()
+    def assignShift(self, shift, schedule_id):
+        schedule = Schedule.query.get(schedule_id)
+        if schedule:
+            schedule.shifts.append(shift)
+            db.session.commit()
+        else:
+            print(f"Error: Schedule with ID {schedule_id} not found.")
 
     def createSchedule(self, start_date, end_date, total_hours):
         return Schedule.createSchedule(start_date, end_date, total_hours)
@@ -95,10 +119,61 @@ class ServiceStaff(db.Model):
         return TimeOff.createTimeOff(start_date, end_date, hours)
 
     def approveSwap(self, swap_id):
-        pass  # Swap logic goes here
+        swap_request = Request.query.get(swap_id)
+        if not swap_request:
+            return jsonify({"message": "Swap request not found."}), 404
 
-    def getShift(self):
-        return Shift.query.filter_by(employee_id=self.employee_id).all()
+        if swap_request.status != 'Pending':
+            return jsonify({"message": f"Swap request is already {swap_request.status}."}), 400
+
+        if swap_request.request_type != 'Shift Swap':
+            return jsonify({"message": "This request is not a shift swap."}), 400
+        
+        requested_shift = Shift.query.get(swap_request.request_id)  
+        target_shift = Shift.query.filter_by(employee_id=swap_request.employee_id).first()
+
+        if not requested_shift or not target_shift:
+            return jsonify({"message": "One or both shifts involved in the swap not found."}), 404
+
+       
+        temp_employee_id = requested_shift.employee_id
+        requested_shift.employee_id = target_shift.employee_id
+        target_shift.employee_id = temp_employee_id
+        swap_request.status = 'Approved'
+        db.session.commit()
+
+        return jsonify({"message": f"Swap request {swap_id} approved and shifts swapped."}), 200
+    
+    def createSwapRequest(self, requested_shift_id, target_shift_id):
+        requested_shift = Shift.query.get(requested_shift_id)
+        target_shift = Shift.query.get(target_shift_id)
+
+        if not requested_shift or not target_shift:
+            return jsonify({"message": "One or both shifts not found."}), 404
+        
+        if requested_shift.employee_id != self.employee_id:
+            return jsonify({"message": "You can only request a swap for your own shift."}), 400
+
+        swap_request = Request.createRequest(
+            employee_id=self.employee_id,
+            request_type='Shift Swap',
+            request_date=datetime.now()
+        )
+        swap_request.requested_shift_id = requested_shift_id
+        swap_request.target_shift_id = target_shift_id
+
+        db.session.commit()
+
+        return jsonify({"message": f"Swap request {swap_request.request_id} created successfully."}), 201
+
+    def getShift(self, shift_id):
+        if Shift.checkShiftAvailability(shift_id):
+            shift = Shift.query.get(shift_id)
+            shift.employee_id = self.employee_id
+            db.session.commit()
+            return shift
+        else:
+            return None
 
     def logWorkHours(self, log):
         db.session.add(log)
@@ -110,10 +185,11 @@ class Schedule(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     total_hours = db.Column(db.Numeric(10, 2), nullable=False)
+    shifts = db.relationship('Shift', secondary=schedule_shift, backref=db.backref('schedules', lazy='dynamic'))
 
     @staticmethod
-    def getSchedule(schedule_id):
-        return Schedule.query.get(schedule_id)
+    def getSchedule(schedule_id, manager_id):
+        return Schedule.query.filter_by(schedule_id=schedule_id, manager_id=manager_id).first()
 
     def updateSchedule(self, start_date, end_date, total_hours):
         self.start_date = start_date
@@ -121,6 +197,9 @@ class Schedule(db.Model):
         self.total_hours = total_hours
         db.session.commit()
 
+    def getShiftDB(self):
+        return self.shifts
+    
     @staticmethod
     def createSchedule(start_date, end_date, total_hours):
         schedule = Schedule(start_date=start_date, end_date=end_date, total_hours=total_hours)
@@ -135,7 +214,6 @@ class Shift(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     total_hours = db.Column(db.Numeric(5, 2), nullable=False)
-    shift_database = db.Column(db.Text)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'))
 
     @staticmethod
@@ -144,10 +222,15 @@ class Shift(db.Model):
 
     @staticmethod
     def checkShiftAvailability(shift_id):
-        return Shift.query.get(shift_id) is not None
+        shift = Shift.query.get(shift_id)
+
+        if shift is None:
+            return False
+  
+        return shift.employee_id is None
 
     @staticmethod
-    def createShift(shift_date, start_time, end_time, total_hours, employee_id):
+    def createShift(shift_date, start_time, end_time, total_hours, employee_id=None):
         shift = Shift(
             shift_date=shift_date,
             start_time=start_time,
@@ -163,9 +246,8 @@ class Request(db.Model):
     __tablename__ = 'request'
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
-    request_type = db.Column(db.String(50), nullable=False)
-    request_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(50), default='Pending')
+    request_type = db.Column(db.String(50)) 
 
     @staticmethod
     def createRequest(employee_id, request_type, request_date):
@@ -173,7 +255,38 @@ class Request(db.Model):
         db.session.add(req)
         db.session.commit()
         return req
-
+    
+    def cancelRequest(self):
+        self.status = 'Cancelled'
+        db.session.commit()
+        return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 200
+    
+    def getManagerApproval(self):
+        if self.status == 'Cancelled':
+            return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 400
+        if self.request_type == 'Time Off':
+            if self.status == 'Approved':
+                return jsonify({"message": f"Time-off request {self.request_id} has been approved."}), 200
+            elif self.status == 'Pending':
+                return jsonify({"message": f"Time-off request {self.request_id} is still pending."}), 400
+            else:
+                return jsonify({"message": f"Time-off request {self.request_id} has been rejected or is in an invalid state."}), 400
+        else:
+            return jsonify({"message": "This is not a time-off request."}), 400
+    
+    def getStaffApproval(self):
+        if self.status == 'Cancelled':
+            return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 400
+        if self.request_type == 'Shift Swap':
+            if self.status == 'Approved':
+                return jsonify({"message": f"Shift swap request {self.request_id} has been approved and processed."}), 200
+            elif self.status == 'Pending':
+                return jsonify({"message": f"Shift swap request {self.request_id} is still pending."}), 400
+            else:
+                return jsonify({"message": f"Shift swap request {self.request_id} has been rejected or is in an invalid state."}), 400
+        else:
+            return jsonify({"message": "This is not a shift swap request."}), 400
+    
 class TimeOff(db.Model):
     __tablename__ = 'time_off'
     time_off_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -183,7 +296,11 @@ class TimeOff(db.Model):
 
     @staticmethod
     def displayForm():
-        return {'fields': ['start_leave_date', 'end_leave_date', 'total_leave_hours']}
+        time_off_records = TimeOff.query.all()
+        return [{'time_off_id': record.time_off_id,
+                 'start_leave_date': record.start_leave_date,
+                 'end_leave_date': record.end_leave_date,
+                 'total_leave_hours': record.total_leave_hours} for record in time_off_records]
 
     @staticmethod
     def createTimeOff(start_leave_date, end_leave_date, total_leave_hours):
@@ -191,6 +308,7 @@ class TimeOff(db.Model):
         db.session.add(time_off)
         db.session.commit()
         return time_off
+
 
 class ClockRecord(db.Model):
     __tablename__ = 'clock_record'
@@ -216,9 +334,3 @@ class ClockRecord(db.Model):
         db.session.commit()
         return record
 
-# Many-to-many schedule/shift association table
-schedule_shift = db.Table(
-    'schedule_shift',
-    db.Column('schedule_id', db.Integer, db.ForeignKey('schedule.schedule_id'), primary_key=True),
-    db.Column('shift_id', db.Integer, db.ForeignKey('shift.shift_id'), primary_key=True)
-)
