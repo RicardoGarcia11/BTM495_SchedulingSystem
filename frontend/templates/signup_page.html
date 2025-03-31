@@ -9,17 +9,24 @@
   <body>
     <div class="sign-up-page">
       <div class="div">
-        <div class="login">Full Name</div>
-        <div class="text-wrapper">Email</div>
-        <div class="login-2">Create New Password</div>
-        <div class="login-3">Confirm Password</div>
-        <div class="rectangle"></div>
-        <div class="rectangle-2"></div>
-        <div class="rectangle-3"></div>
-        <div class="rectangle-4"></div>
-        <div class="login-4">SIGN UP</div>
-        <div class="button-transition"><div class="login-5">Create Account</div></div>
+        <form method="POST" action="/register">
+          <label class="login">Full Name</label>
+          <input type="text" name="employee_name" class="rectangle" required />
+
+          <label class="text-wrapper">Email</label>
+          <input type="email" name="email" class="rectangle-2" required />
+
+          <label class="login-2">Create New Password</label>
+          <input type="password" name="password" class="rectangle-3" required />
+
+          <label class="login-3">Confirm Password</label>
+          <input type="password" name="confirm_password" class="rectangle-4" required />
+          <input type="hidden" name="user_type" value="Service_Staff" />
+
+          <button type="submit" class="button-transition login-5">Create Account</button>
+        </form>
       </div>
     </div>
   </body>
 </html>
+

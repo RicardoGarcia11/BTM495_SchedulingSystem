@@ -29,7 +29,7 @@ with app.app_context():
 def home():
     return render_template("home_page.html")
 
-# Login route (basic example)
+# Login route (basic example) 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -87,9 +87,9 @@ def send_message():
         return jsonify({"message": "Message sent"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
-# Additional routes and APIs can be added here similarly...
-
+@app.route("/signup")
+def signup():
+    return render_template("signup_page.html")
 # Run Flask application
 if __name__ == "__main__":
     app.run(debug=True)
