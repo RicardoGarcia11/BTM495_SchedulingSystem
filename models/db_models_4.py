@@ -293,22 +293,19 @@ class TimeOff(db.Model):
     start_leave_date = db.Column(db.Date, nullable=False)
     end_leave_date = db.Column(db.Date, nullable=False)
     total_leave_hours = db.Column(db.Numeric(5, 2), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)  # ✅ Add this line
 
     @staticmethod
-    def displayForm():
-        time_off_records = TimeOff.query.all()
-        return [{'time_off_id': record.time_off_id,
-                 'start_leave_date': record.start_leave_date,
-                 'end_leave_date': record.end_leave_date,
-                 'total_leave_hours': record.total_leave_hours} for record in time_off_records]
-
-    @staticmethod
-    def createTimeOff(start_leave_date, end_leave_date, total_leave_hours):
-        time_off = TimeOff(start_leave_date=start_leave_date, end_leave_date=end_leave_date, total_leave_hours=total_leave_hours)
+    def createTimeOff(start_leave_date, end_leave_date, total_leave_hours, employee_id):
+        time_off = TimeOff(
+            start_leave_date=start_leave_date,
+            end_leave_date=end_leave_date,
+            total_leave_hours=total_leave_hours,
+            employee_id=employee_id
+        )
         db.session.add(time_off)
         db.session.commit()
         return time_off
-
 
 class ClockRecord(db.Model):
     __tablename__ = 'clock_record'
