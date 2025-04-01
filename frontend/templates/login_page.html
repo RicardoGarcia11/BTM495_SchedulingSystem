@@ -119,15 +119,15 @@
     const errorMessage = document.getElementById('error-message');
 
     form.addEventListener('submit', function (e) {
-      // Simulate email and password validation
+    
       const validEmail = "test@example.com";
       const validPassword = "password123";
 
       if (email.value !== validEmail || password.value !== validPassword) {
-        e.preventDefault(); // Prevent form submission
+        e.preventDefault();
         errorMessage.textContent = 'Invalid email or password. Please try again.';
       } else {
-        errorMessage.textContent = ''; // Clear error message
+        errorMessage.textContent = '';
       }
     });
   </script>

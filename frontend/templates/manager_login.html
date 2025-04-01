@@ -1,30 +1,118 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Manager Login</title>
-    <link rel="stylesheet" href="globals.css" />
-    <link rel="stylesheet" href="styleguide.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="sign-up-page">
-      <div class="div">
-        <form method="POST" action="/manager_login">
-          <h2 class="login-title">Manager Login</h2>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-          <label class="text-wrapper">Manager Email</label>
-          <input type="email" name="email" class="rectangle-2" required />
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
 
-          <label class="login-2">Password</label>
-          <input type="password" name="password" class="rectangle-3" required />
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-    
-          <input type="hidden" name="user_type" value="Manager" />
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
 
-          <button type="submit" class="button-transition login-5">Login</button>
-        </form>
-      </div>
+    .card {
+      width: 300px;
+      padding: 20px;
+      border: 4px solid #8e44ec;
+      background-color: transparent;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+      align-self: flex-start;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #8e44ec;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6c2cb3;
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+      text-align: center;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="title">Manager Login</div>
+    <div class="card">
+      <form method="POST" action="/manager_login">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" placeholder="Enter your email" required />
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter your password" required />
+
+        <input type="hidden" name="user_type" value="Manager" />
+
+        <div class="error" id="error-message"></div>
+
+        <button type="submit">Login</button>
+      </form>
     </div>
-  </body>
+  </div>
+
+</body>
 </html>

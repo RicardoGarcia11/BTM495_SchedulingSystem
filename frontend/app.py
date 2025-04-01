@@ -101,19 +101,16 @@ def manager_login():
         if account and check_password_hash(account.password, password):
             user = User.query.get(account.employee_id)
             if user and user.user_type == "Manager":
-            
                 session['logged_in'] = True
                 session['user_type'] = 'Manager'
                 session['user_id'] = user.employee_id
                 session['user_name'] = user.employee_name
-
                 return redirect(url_for("manager_dashboard"))
             else:
                 return jsonify({"error": "Access denied: Not a manager"}), 403
         else:
             return jsonify({"error": "Invalid login credentials"}), 401
     return render_template("manager_login.html")
-
 
 @app.route("/manager_dashboard")
 def manager_dashboard():

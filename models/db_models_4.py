@@ -293,7 +293,7 @@ class TimeOff(db.Model):
     start_leave_date = db.Column(db.Date, nullable=False)
     end_leave_date = db.Column(db.Date, nullable=False)
     total_leave_hours = db.Column(db.Numeric(5, 2), nullable=False)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)  # ✅ Add this line
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False) 
 
     @staticmethod
     def createTimeOff(start_leave_date, end_leave_date, total_leave_hours, employee_id):
