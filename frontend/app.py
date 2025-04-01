@@ -94,6 +94,28 @@ def signup():
 def manager_portal():
     return render_template("managerportal_page.html")
 
+@app.route("/manager_login", methods=["GET", "POST"])
+def manager_login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        account = Account.query.filter_by(email=email).first()
+
+        if account and check_password_hash(account.password, password):
+            user = User.query.get(account.employee_id)
+            if user and user.user_type == "Manager":
+                return redirect(url_for("manager_dashboard"))
+            else:
+                return jsonify({"error": "Access denied: Not a manager"}), 403
+        else:
+            return jsonify({"error": "Invalid login credentials"}), 401
+    return render_template("manager_login.html")
+
+@app.route("/manager_dashboard")
+def manager_dashboard():
+    return render_template("manager_dashboard.html")
+
+
 
 
 # Run Flask application

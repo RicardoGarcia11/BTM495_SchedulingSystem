@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Manager Login</title>
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="styleguide.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="sign-up-page">
+      <div class="div">
+        <form method="POST" action="/manager_login">
+          <h2 class="login-title">Manager Login</h2>
+
+          <label class="text-wrapper">Manager Email</label>
+          <input type="email" name="email" class="rectangle-2" required />
+
+          <label class="login-2">Password</label>
+          <input type="password" name="password" class="rectangle-3" required />
+
+          <!-- Optional: Hidden input to identify manager login -->
+          <input type="hidden" name="user_type" value="Manager" />
+
+          <button type="submit" class="button-transition login-5">Login</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

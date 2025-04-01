@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manager Dashboard - Scheduling App</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/manager_dashboard.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Manager Dashboard</h1>
+    <p>Welcome to the scheduling system</p>
+  </header>
+
+  <div class="dashboard-container">
+    <a href="/view_schedule" class="dashboard-btn">View Schedule</a>
+    <a href="/approve_requests" class="dashboard-btn">Approve Time-Off Requests</a>
+    <a href="/assign_shift" class="dashboard-btn">Assign Shifts</a>
+    <a href="/messages" class="dashboard-btn">View Messages</a>
+  </div>
+</body>
+</html>
+
