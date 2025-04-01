@@ -1,0 +1,161 @@
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header Styles */
+.top-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  background-color: #7F4FE4;
+  padding: 0 40px;
+  color: white;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-item {
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  background-color: rgba(1.61, 0.12, 4.78, 0.5);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-icon {
+  width: 55px;
+  height: 55px;
+}
+
+.username {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Form Section */
+.form-section {
+  padding: 40px 20px;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.time-off-form {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group,
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-row {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="file"],
+textarea {
+  padding: 10px;
+  border: 2px solid #000;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.half-day,
+.reason {
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.half-day legend,
+.reason legend {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.checkbox-columns {
+  display: flex;
+  gap: 20px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.or-divider {
+  font-style: italic;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.submit-button {
+  background-color: #007AFF;
+  color: white;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #005bb5;
+}
