@@ -42,7 +42,7 @@ def login():
         else:
             return jsonify({"error": "Invalid login credentials"}), 401
     else:
-        return render_template("login.html")
+        return render_template("login_page.html")
 
 # API route example: Create Shift
 @app.route("/create_shift", methods=["POST"])
