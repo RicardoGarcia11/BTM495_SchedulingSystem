@@ -1,32 +1,148 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="globals.css" />
-    <link rel="stylesheet" href="styleguide.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="sign-up-page">
-      <div class="div">
-        <form method="POST" action="/register">
-          <label class="login">Full Name</label>
-          <input type="text" name="employee_name" class="rectangle" required />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up Page</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-          <label class="text-wrapper">Email</label>
-          <input type="email" name="email" class="rectangle-2" required />
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
 
-          <label class="login-2">Create New Password</label>
-          <input type="password" name="password" class="rectangle-3" required />
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-          <label class="login-3">Confirm Password</label>
-          <input type="password" name="confirm_password" class="rectangle-4" required />
-          <input type="hidden" name="user_type" value="Service_Staff" />
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-          <button type="submit" class="button-transition login-5">Create Account</button>
-        </form>
-      </div>
+    .square {
+      width: 480px;
+      padding: 30px;
+      border: 4px solid #8e44ec;
+      background-color: transparent;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    form {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px 35px;
+      justify-items: center;
+      align-items: center;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%; 
+    }
+
+    input {
+      width: 85%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      grid-column: span 2;
+      padding: 14px;
+      background-color: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6c2cb3;
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+      grid-column: span 2;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="title">Sign Up</div>
+    <div class="square">
+      <form id="signupForm" method="POST" action="/register">
+        <div class="form-group">
+          <label for="employee_name">Full Name</label>
+          <input type="text" id="employee_name" name="employee_name" placeholder="Enter your full name" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Create New Password</label>
+          <input type="password" id="password" name="password" placeholder="Create a password" required />
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Re-enter Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required />
+        </div>
+        <div class="error" id="error-message"></div>
+        <input type="hidden" name="user_type" value="Service_Staff" />
+        <button type="submit">Create Account</button>
+      </form>
     </div>
-  </body>
-</html>
+  </div>
 
+  <script>
+    const form = document.getElementById('signupForm');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const errorMessage = document.getElementById('error-message');
+
+    form.addEventListener('submit', function (e) {
+      if (password.value !== confirmPassword.value) {
+        e.preventDefault(); // Prevent form submission
+        errorMessage.textContent = 'Passwords do not match. Please try again.';
+      } else {
+        errorMessage.textContent = ''; // Clear error message
+      }
+    });
+  </script>
+
+</body>
+</html>

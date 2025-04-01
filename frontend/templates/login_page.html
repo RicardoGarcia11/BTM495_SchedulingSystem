@@ -1,24 +1,136 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="globals.css" />
-    <link rel="stylesheet" href="styleguide.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="sign-up-page">
-      <div class="div">
-        <form method="POST" action="/login">
-          <label class="text-wrapper">Email</label>
-          <input type="email" name="email" class="rectangle-2" required />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-          <label class="login-2">Password</label>
-          <input type="password" name="password" class="rectangle-3" required />
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      display: flex;
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      background-color: #f4f4f4; 
+    }
 
-          <button type="submit" class="button-transition login-5">Login</button>
-        </form>
-      </div>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 20px; 
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px; 
+      text-align: center;
+    }
+
+    .square {
+      width: 300px;
+      padding: 20px; 
+      border: 4px solid #8e44ec; 
+      background-color: transparent; 
+      box-sizing: border-box; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    form {
+      width: 100%; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+      align-self: flex-start; 
+    }
+
+    input {
+      width: 100%; 
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%; 
+      padding: 10px;
+      background-color: #8e44ec; 
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6c2cb3; 
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+      text-align: center;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="title">Login</div>
+    <div class="square">
+      <form id="loginForm" method="POST" action="/login">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+
+        <div class="error" id="error-message"></div>
+
+        <button type="submit">Login</button>
+      </form>
     </div>
-  </body>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const errorMessage = document.getElementById('error-message');
+
+    form.addEventListener('submit', function (e) {
+      // Simulate email and password validation
+      const validEmail = "test@example.com";
+      const validPassword = "password123";
+
+      if (email.value !== validEmail || password.value !== validPassword) {
+        e.preventDefault(); // Prevent form submission
+        errorMessage.textContent = 'Invalid email or password. Please try again.';
+      } else {
+        errorMessage.textContent = ''; // Clear error message
+      }
+    });
+  </script>
+
+</body>
 </html>
