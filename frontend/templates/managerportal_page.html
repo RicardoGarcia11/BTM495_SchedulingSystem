@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Portal - Calendar</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="calendar-container">
+    <!-- Header / Banner -->
+    <header class="calendar-header">
+      <div class="nav-left">
+        <div class="nav-button active">CALENDAR</div>
+        <div class="nav-button">REQUESTS</div>
+        <div class="nav-button">MESSAGES</div>
+        <div class="nav-button">REPORTS</div>
+      </div>
+      <div class="nav-right">
+        <svg class="profile-icon" viewBox="0 0 55 55" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="27.5" cy="27.5" r="27.5" fill="white"/>
+          <circle cx="27.5" cy="20.6" r="10" fill="#7F4FE4"/>
+        </svg>
+        <div class="manager-name">Manager</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="calendar-main">
+      <!-- Controls -->
+      <div class="calendar-controls">
+        <button class="create-schedule">+ Create Schedule</button>
+        <div class="calendar-month">JANUARY 2025</div>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="calendar-grid">
+        <!-- Weekday headers -->
+        <div class="day-header">MON</div>
+        <div class="day-header">TUE</div>
+        <div class="day-header">WED</div>
+        <div class="day-header">THU</div>
+        <div class="day-header">FRI</div>
+        <div class="day-header">SAT</div>
+        <div class="day-header">SUN</div>
+
+        <!-- Example date cells (populate dynamically or statically as needed) -->
+        <div class="day-cell"></div>
+        <div class="day-cell"></div>
+        <div class="day-cell">1</div>
+        <div class="day-cell">2</div>
+        <div class="day-cell">3</div>
+        <div class="day-cell">4</div>
+        <div class="day-cell">5</div>
+
+        <div class="day-cell">6</div>
+        <div class="day-cell">7</div>
+        <div class="day-cell">8</div>
+        <div class="day-cell">9</div>
+        <div class="day-cell">10</div>
+        <div class="day-cell">11</div>
+        <div class="day-cell">12</div>
+
+        <div class="day-cell">13</div>
+        <div class="day-cell">14</div>
+        <div class="day-cell">15</div>
+        <div class="day-cell">16</div>
+        <div class="day-cell">17</div>
+        <div class="day-cell">18</div>
+        <div class="day-cell">19</div>
+
+        <div class="day-cell">20</div>
+        <div class="day-cell">21</div>
+        <div class="day-cell">22</div>
+        <div class="day-cell">23</div>
+        <div class="day-cell">24</div>
+        <div class="day-cell">25</div>
+        <div class="day-cell">26</div>
+
+        <div class="day-cell">27</div>
+        <div class="day-cell">28</div>
+        <div class="day-cell">29</div>
+        <div class="day-cell">30</div>
+        <div class="day-cell">31</div>
+        <div class="day-cell"></div>
+        <div class="day-cell"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
