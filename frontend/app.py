@@ -90,6 +90,12 @@ def send_message():
 @app.route("/signup")
 def signup():
     return render_template("signup_page.html")
+@app.route("/managerportal_page")
+def manager_portal():
+    return render_template("managerportal_page.html")
+
+
+
 # Run Flask application
 if __name__ == "__main__":
     app.run(debug=True)
