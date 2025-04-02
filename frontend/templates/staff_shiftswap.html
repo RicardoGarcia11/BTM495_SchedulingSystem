@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard - Shift Swap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+    }
+
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a:hover,
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      border-radius: 4px;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .dropdown-menu a {
+      color: white;
+      padding: 12px 16px;
+      display: block;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .main-content {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 80px 20px 40px;
+    }
+
+    .calendar-container {
+      max-width: 600px;
+      margin-right: 140px;
+    }
+
+    .calendar-header {
+      margin-bottom: 20px;
+    }
+
+    .calendar-label {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 50px;
+      margin-left: 2px;
+    }
+
+    .calendar-title {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .calendar-days,
+    .calendar-dates {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      text-align: center;
+    }
+
+    .calendar-days div {
+      font-weight: bold;
+      font-size: 16px;
+      padding: 10px 0;
+    }
+
+    .calendar-cell {
+      background-color: white;
+      padding: 15px 0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      font-size: 16px;
+    }
+
+    .calendar-cell:hover {
+      background-color: #8e44ec;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .calendar-cell.selected {
+      background-color: #8e44ec;
+      color: white;
+    }
+
+    .swap-panel {
+      max-width: 300px;
+      margin-top: 95px;
+      visibility: hidden;
+    }
+
+    .swap-panel.visible {
+      visibility: visible;
+    }
+
+    .swap-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .swap-user {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .user-name {
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 20px;
+    }
+
+    .requested-button,
+    .request-button {
+      font-weight: bold;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .requested-button {
+      background-color: #6200ea;
+      color: white;
+      cursor: default;
+    }
+
+    .request-button {
+      background-color: #d1b3ff;
+      color: black;
+    }
+
+    .request-button:hover {
+      background-color: #c49dff;
+    }
+  </style>
+  <script>
+    function handleRequest(button) {
+      button.classList.remove('request-button');
+      button.classList.add('requested-button');
+      button.textContent = 'Requested';
+      button.disabled = true;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const calendarCells = document.querySelectorAll('.calendar-cell');
+      const swapPanel = document.querySelector('.swap-panel');
+
+      calendarCells.forEach(cell => {
+        if (cell.textContent.trim() !== '') {
+          cell.addEventListener('click', () => {
+            calendarCells.forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+            swapPanel.classList.add('visible');
+          });
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">SCHEDULE</a></li>
+      <li><a href="#" class="active">SHIFT SWAP</a></li>
+      <li><a href="#">CREATE AVAILABILITY</a></li>
+      <li><a href="#">TIME OFF</a></li>
+      <li><a href="#">MESSAGES</a></li>
+      <li><a href="#">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="calendar-container">
+      <div class="calendar-label">Select Date:</div>
+      <div class="calendar-header">
+        <div class="calendar-title">January 2025</div>
+      </div>
+      <div class="calendar-days">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div class="calendar-dates">
+        <div class="calendar-cell"></div><div class="calendar-cell"></div><div class="calendar-cell">1</div><div class="calendar-cell">2</div><div class="calendar-cell">3</div><div class="calendar-cell">4</div><div class="calendar-cell">5</div>
+        <div class="calendar-cell">6</div><div class="calendar-cell">7</div><div class="calendar-cell">8</div><div class="calendar-cell">9</div><div class="calendar-cell">10</div><div class="calendar-cell">11</div><div class="calendar-cell">12</div>
+        <div class="calendar-cell">13</div><div class="calendar-cell">14</div><div class="calendar-cell">15</div><div class="calendar-cell">16</div><div class="calendar-cell">17</div><div class="calendar-cell">18</div><div class="calendar-cell">19</div>
+        <div class="calendar-cell">20</div><div class="calendar-cell">21</div><div class="calendar-cell">22</div><div class="calendar-cell">23</div><div class="calendar-cell">24</div><div class="calendar-cell">25</div><div class="calendar-cell">26</div>
+        <div class="calendar-cell">27</div><div class="calendar-cell">28</div><div class="calendar-cell">29</div><div class="calendar-cell">30</div><div class="calendar-cell">31</div>
+      </div>
+    </div>
+
+    <div class="swap-panel">
+      <div class="swap-title">Available to Swap:</div>
+      <div class="swap-user">
+        <div class="user-name">Justin Hua</div>
+        <button class="request-button" onclick="handleRequest(this)">Request Swap</button>
+      </div>
+      <div class="swap-user">
+        <div class="user-name">Ann Nguyen</div>
+        <button class="request-button" onclick="handleRequest(this)">Request Swap</button>
+      </div>
+      <div class="swap-user">
+        <div class="user-name">Isiah Campbell</div>
+        <button class="request-button" onclick="handleRequest(this)">Request Swap</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
