@@ -115,9 +115,12 @@ def manager_login():
                 session['user_name'] = user.employee_name
                 return redirect(url_for("manager_dashboard"))
             else:
-                return jsonify({"error": "Access denied: Not a manager"}), 403
+                error = "Access denied: This portal is for managers only."
+                return render_template("manager_login.html", error=error)
         else:
-            return jsonify({"error": "Invalid login credentials"}), 401
+            error = "Invalid login credentials."
+            return render_template("manager_login.html", error=error)
+    
     return render_template("manager_login.html")
 
 @app.route("/manager_dashboard")
