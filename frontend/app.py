@@ -1,13 +1,12 @@
 import os
 import sys
+from datetime import datetime
 from flask import Flask, request, redirect, url_for, render_template, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
-
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord
-
 
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
@@ -18,7 +17,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
-
 
 with app.app_context():
     db.create_all()
@@ -117,17 +115,26 @@ def manager_dashboard():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         return render_template("manager_dashboard.html")
     else:
-        return redirect(url_for('manager_login'))
-    
+        return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
+
 @app.route("/create_schedule", methods=["GET", "POST"])
 def create_schedule():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         if request.method == "POST":
-            start_date = request.form["start_date"]
-            end_date = request.form["end_date"]
-            total_hours = request.form["total_hours"]
-            shift_ids = request.form.getlist("shifts")
+            print(" FORM SUBMITTED")
 
+            start_date = datetime.strptime(request.form["start_date"], "%Y-%m-%d").date()
+            end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date()
+            shift_ids = request.form.getlist("shifts")
+            total_hours = 0
+            for shift_id in shift_ids:
+                shift = Shift.query.get(int(shift_id))
+                if shift:
+                    total_hours += float(shift.total_hours)
+
+            print(f"Start: {start_date}, End: {end_date}, Total Hours: {total_hours}, Shifts: {shift_ids}")
+
+            
             schedule = Schedule.createSchedule(start_date, end_date, total_hours, session['user_id'])
 
             for shift_id in shift_ids:
@@ -138,15 +145,16 @@ def create_schedule():
             db.session.commit()
             return redirect(url_for("manager_dashboard"))
 
-        shifts = Shift.query.all()
+        
+        shifts = Shift.query.filter(Shift.shift_date >= datetime.today().date()).all()
         return render_template("create_schedule.html", shifts=shifts)
 
     return redirect(url_for("manager_login"))
-
 
 def start_app():
     app.run(debug=True)
 
 if __name__ == "__main__":
     start_app()
+
 

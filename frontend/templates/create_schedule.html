@@ -75,7 +75,9 @@
         {% for shift in shifts %}
           <div class="shift-item">
             <input type="checkbox" name="shifts" value="{{ shift.shift_id }}">
-            Shift #{{ shift.shift_id }} — {{ shift.date }} | {{ shift.start_time }} - {{ shift.end_time }}
+
+            Shift #{{ shift.shift_id }} — {{ shift.shift_date.strftime('%Y-%m-%d') }} | {{ shift.start_time.strftime('%I:%M %p') }} - {{ shift.end_time.strftime('%I:%M %p') }}
+            
           </div>
         {% endfor %}
       </div>

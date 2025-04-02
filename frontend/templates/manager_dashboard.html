@@ -123,8 +123,13 @@
         </ul>
         <div class="manager-text">Manager</div>
     </nav>
+    {% if success_message %}
+  <div style="color: green; text-align: center; font-weight: bold; margin-top: 20px;">
+    {{ success_message }}
+  </div>
+{% endif %} 
     <div style="text-align: right; padding: 20px;">
-        <button class="create-schedule-btn">+ Create Schedule</button>
+        <a href="{{ url_for('create_schedule') }}" class="create-schedule-btn">+ Create Schedule</a>
     </div>
     <div class="calendar-container">
         <div class="calendar-title">January 2025</div>
