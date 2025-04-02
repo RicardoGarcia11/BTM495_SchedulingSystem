@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manager Dashboard - Schedule</title>
+  <title>Staff Dashboard - Schedule</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -127,17 +127,20 @@
   </style>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="#">SCHEDULE</a></li>
-            <li><a href="#">REQUEST</a></li>
-            <li><a href="#">MESSAGE</a></li>
-            <li><a href="#">REPORT</a></li>
-        </ul>
-        <div class="manager-text">Manager</div>
-    </nav>
-    <div style="text-align: right; padding: 20px;">
-        <button class="create-schedule-btn">+ Create Schedule</button>
+  <nav>
+    <ul>
+      <li><a href="#" class="active">SCHEDULE</a></li>
+      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="#">CREATE AVAILABILITY</a></li>
+      <li><a href="#">TIME OFF</a></li>
+      <li><a href="#">MESSAGES</a></li>
+      <li><a href="#">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="#">LOG OUT</a>
+      </div>
     </div>
   </nav>
   <div class="calendar-container">

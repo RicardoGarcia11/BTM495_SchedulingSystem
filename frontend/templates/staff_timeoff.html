@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Time Off</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+    }
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    nav ul li a:hover {
+      background-color: #5a005a;
+    }
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 16px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    .main-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 60px 40px 100px;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+    .time-off-form {
+      background-color: #f2f2f2;
+      border-radius: 10px;
+      padding: 20px;
+      width: 650px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      font-size: 14px;
+      margin-left: 40px;
+    }
+    .form-section {
+      margin-bottom: 15px;
+    }
+    .form-section label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-section input[type="text"],
+    .form-section input[type="date"],
+    .form-section textarea {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 10px 25px;
+      margin-top: 8px;
+    }
+    .checkbox-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    input[type="checkbox"] {
+      accent-color: #007bff;
+    }
+    textarea {
+      height: 80px;
+      resize: none;
+    }
+    .upload-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .upload-section input[type="file"] {
+      display: none;
+    }
+    .upload-btn {
+      background-color: #a270ea;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+    .upload-btn:hover {
+      background-color: #5a005a;
+    }
+    .submit-btn {
+      margin-top: 15px;
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background-color: #005ecf;
+    }
+    .mini-calendar {
+      width: 280px;
+      text-align: center;
+      margin-top: 140px;
+      margin-left: 10px;
+    }
+    .mini-calendar h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #8e44ec;
+    }
+    .mini-calendar table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+    .mini-calendar th,
+    .mini-calendar td {
+      padding: 10px;
+      text-align: center;
+    }
+    .mini-calendar td {
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .mini-calendar td:hover {
+      background-color: #5a005a;
+      color: white;
+    }
+    .mini-calendar th {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">SCHEDULE</a></li>
+      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="#">CREATE AVAILABILITY</a></li>
+      <li><a href="#" class="active">TIME OFF</a></li>
+      <li><a href="#">MESSAGES</a></li>
+      <li><a href="#">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="#">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+  <div class="main-container">
+    <form class="time-off-form" method="POST" enctype="multipart/form-data">
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Date of Request:</label>
+          <input type="date" name="date_request" required />
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>Employee Name:</label>
+          <input type="text" name="employee_name" required />
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>User ID#:</label>
+          <input type="text" name="user_id" required />
+        </div>
+      </div>
+      <hr class="form-section"/>
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Start Date:</label>
+          <input type="date" name="start_date" required />
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>End Date:</label>
+          <input type="date" name="end_date" required />
+        </div>
+      </div>
+      <div class="form-section">
+        <label>Half Day (4 Hours) - please indicate if:</label>
+        <div class="checkbox-group" style="grid-template-columns: repeat(2, 1fr);">
+          <label><input type="checkbox" name="half_first" /> First half</label>
+          <label><input type="checkbox" name="half_second" /> Second half</label>
+          <label><input type="checkbox" name="full_day" /> Full Day (8 Hours)</label>
+        </div>
+      </div>
+      <div class="form-section">
+        <label>Reason for Time Off:</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" /> Vacation</label>
+          <label><input type="checkbox" /> Personal Leave</label>
+          <label><input type="checkbox" /> Family/Medical Leave</label>
+          <label><input type="checkbox" /> Sick</label>
+          <label><input type="checkbox" /> Voting Leave</label>
+          <label><input type="checkbox" /> Bereavement</label>
+          <label><input type="checkbox" /> Military Leave</label>
+          <label><input type="checkbox" /> Maternity Leave</label>
+          <label><input type="checkbox" /> Jury Duty</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Explanation (optional):</label>
+          <textarea name="explanation"></textarea>
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label for="upload">Upload File (Optional):</label>
+          <div class="upload-section">
+            <input type="file" id="upload" name="upload" />
+            <label for="upload" class="upload-btn">Upload</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+    <div class="mini-calendar">
+      <h3>JANUARY 2025</h3>
+      <table>
+        <thead>
+          <tr><th>MON</th><th>TUE</th><th>WED</th><th>THR</th><th>FRI</th><th>SAT</th><th>SUN</th></tr>
+        </thead>
+        <tbody>
+          <tr><td></td><td></td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+          <tr><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+          <tr><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td></tr>
+          <tr><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td></tr>
+          <tr><td>27</td><td>28</td><td>29</td><td>30</td><td>31</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
