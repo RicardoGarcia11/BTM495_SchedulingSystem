@@ -34,9 +34,19 @@ def login():
         account = Account.query.filter_by(email=email).first()
 
         if account and check_password_hash(account.password, password):
-            return redirect(url_for("home"))
-        else:
-            return jsonify({"error": "Invalid login credentials"}), 401
+            user = User.query.get(account.employee_id)
+            session['logged_in'] = True
+            session['user_type'] = user.user_type
+            session['user_id'] = user.employee_id
+            session['user_name'] = user.employee_name
+
+            if user.user_type == "Manager":
+                return redirect(url_for("manager_dashboard"))
+            else:
+                return redirect(url_for("staff_dashboard"))
+
+        return render_template("login_page.html", error="Invalid email or password.")
+    
     return render_template("login_page.html")
 
 @app.route("/create_shift", methods=["POST"])
@@ -150,6 +160,14 @@ def create_schedule():
         return render_template("create_schedule.html", shifts=shifts)
 
     return redirect(url_for("manager_login"))
+
+@app.route("/staff_dashboard")
+def staff_dashboard():
+    if 'logged_in' in session and session.get('user_type') == 'Service_Staff':
+        return render_template("staff_dashboard.html")
+    else:
+        return redirect(url_for('login'))
+    
 
 def start_app():
     app.run(debug=True)

@@ -90,6 +90,21 @@ with app.app_context():
         total_staff_hours=4.0,
         employee_id=staff1.employee_id
     )
+    shift3 = Shift.createShift(
+        shift_date=today + timedelta(days=2),
+        start_time=now.replace(hour=10, minute=0),
+        end_time=now.replace(hour=18, minute=0),
+        total_hours=8.0,
+        employee_id=None
+    )
+
+    shift4 = Shift.createShift(
+        shift_date=today + timedelta(days=3),
+        start_time=now.replace(hour=14, minute=0),
+        end_time=now.replace(hour=22, minute=0),
+        total_hours=8.0,
+        employee_id=None
+    )
 
     db.session.add(log)
     db.session.commit()

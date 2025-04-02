@@ -186,6 +186,8 @@ class Schedule(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     total_hours = db.Column(db.Numeric(10, 2), nullable=False)
     shifts = db.relationship('Shift', secondary=schedule_shift, backref=db.backref('schedules', lazy='dynamic'))
+    manager_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
+
 
     @staticmethod
     def getSchedule(schedule_id, manager_id):
@@ -201,11 +203,17 @@ class Schedule(db.Model):
         return self.shifts
     
     @staticmethod
-    def createSchedule(start_date, end_date, total_hours):
-        schedule = Schedule(start_date=start_date, end_date=end_date, total_hours=total_hours)
+    def createSchedule(start_date, end_date, total_hours, manager_id):
+        schedule = Schedule(
+            start_date=start_date,
+            end_date=end_date,
+            total_hours=total_hours,
+            manager_id=manager_id
+        )
         db.session.add(schedule)
         db.session.commit()
         return schedule
+
 
 class Shift(db.Model):
     __tablename__ = 'shift'
