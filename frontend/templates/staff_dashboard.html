@@ -11,13 +11,10 @@
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: 'Inter', sans-serif;
       background-color: #ffffff;
     }
-
-    /* ===== NAVIGATION BAR ===== */
     nav {
       background-color: #8e44ec;
       display: flex;
@@ -27,17 +24,14 @@
       padding: 0 20px;
       position: relative;
     }
-
     nav ul {
       list-style: none;
       display: flex;
       gap: 20px;
     }
-
     nav ul li {
       position: relative;
     }
-
     nav ul li a {
       display: block;
       color: white;
@@ -48,21 +42,16 @@
       transition: background-color 0.3s ease;
       border-radius: 4px;
     }
-
     nav ul li a:hover {
       background-color: #5a005a;
     }
-
     nav ul li a.active {
       background-color: #5a005a;
     }
-
-    /* ===== STAFF DROPDOWN ===== */
     .dropdown {
       position: relative;
       display: inline-block;
     }
-
     .dropdown-toggle {
       color: white;
       font-size: 16px;
@@ -71,7 +60,6 @@
       cursor: pointer;
       user-select: none;
     }
-
     .dropdown-menu {
       display: none;
       position: absolute;
@@ -82,7 +70,6 @@
       border-radius: 4px;
       overflow: hidden;
     }
-
     .dropdown-menu a {
       display: block;
       color: white;
@@ -91,16 +78,12 @@
       font-weight: bold;
       transition: background-color 0.3s ease;
     }
-
     .dropdown-menu a:hover {
       background-color: #5a005a;
     }
-
     .dropdown:hover .dropdown-menu {
       display: block;
     }
-
-    /* ===== CALENDAR ===== */
     .calendar-container {
       display: flex;
       flex-direction: column;
@@ -109,13 +92,11 @@
       padding: 40px 20px;
       margin-top: 40px;
     }
-
     .calendar-title {
       font-size: 28px;
       font-weight: bold;
       margin-bottom: 20px;
     }
-
     .calendar-days,
     .calendar-dates {
       display: grid;
@@ -125,13 +106,11 @@
       max-width: 600px;
       text-align: center;
     }
-
     .calendar-days div {
       font-weight: bold;
       font-size: 16px;
       padding: 10px 0;
     }
-
     .calendar-cell {
       background-color: white;
       padding: 15px 0;
@@ -140,7 +119,6 @@
       transition: background-color 0.3s ease, transform 0.2s ease;
       font-size: 16px;
     }
-
     .calendar-cell:hover {
       background-color: #8e44ec;
       color: white;
@@ -149,8 +127,6 @@
   </style>
 </head>
 <body>
-
-  <!-- ===== NAVIGATION BAR ===== -->
   <nav>
     <ul>
       <li><a href="#" class="active">SCHEDULE</a></li>
@@ -160,8 +136,6 @@
       <li><a href="#">MESSAGES</a></li>
       <li><a href="#">LOG HOURS</a></li>
     </ul>
-
-    <!-- ===== STAFF DROPDOWN ===== -->
     <div class="dropdown">
       <div class="dropdown-toggle">Staff</div>
       <div class="dropdown-menu">
@@ -169,11 +143,8 @@
       </div>
     </div>
   </nav>
-
-  <!-- ===== CALENDAR ===== -->
   <div class="calendar-container">
     <div class="calendar-title">January 2025</div>
-
     <div class="calendar-days">
       <div>Mon</div>
       <div>Tue</div>
@@ -183,7 +154,6 @@
       <div>Sat</div>
       <div>Sun</div>
     </div>
-
     <div class="calendar-dates">
       <div class="calendar-cell"></div>
       <div class="calendar-cell"></div>
@@ -220,6 +190,5 @@
       <div class="calendar-cell">31</div>
     </div>
   </div>
-
 </body>
 </html>
