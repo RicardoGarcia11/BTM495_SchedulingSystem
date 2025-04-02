@@ -191,7 +191,7 @@ def staff_log_hours():
     if request.method == "GET":
         return render_template("staff_loghours.html", shift=shift)
 
-    # If POST, but no shift assigned, deny action
+   
     if not shift:
         return jsonify({"error": "You have no shift assigned today."}), 400
 
@@ -230,6 +230,38 @@ def staff_log_hours():
     except Exception as e:
         print("Logging error:", str(e))
         return jsonify({"error": "Logging hours failed"}), 500
+    
+@app.route("/staff_shiftswap", methods=["GET", "POST"])
+def staff_shiftswap():
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        return redirect(url_for('login'))
+
+    employee_id = session.get("user_id")
+    today = datetime.today().date()
+
+    my_shift = Shift.query.filter_by(shift_date=today, employee_id=employee_id).first()
+
+    other_shifts = Shift.query.filter(
+        Shift.shift_date == today,
+        Shift.employee_id != employee_id,
+        Shift.employee_id.isnot(None)
+    ).all()
+
+    other_users = []
+    for shift in other_shifts:
+        user = User.query.get(shift.employee_id)
+        if user:
+            other_users.append({
+                "name": user.employee_name,
+                "shift_id": shift.shift_id
+            })
+
+    return render_template(
+        "staff_shiftswap.html",
+        my_shift_id=my_shift.shift_id if my_shift else None,
+        other_users=other_users
+    )
+
 
 
 def start_app():
