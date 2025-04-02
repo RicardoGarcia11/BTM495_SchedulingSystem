@@ -6,11 +6,7 @@
   <title>Staff Dashboard - Log Hours</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f5f7fa;
@@ -168,7 +164,11 @@
     <div class="log-box">
       <h2>My Shift</h2>
       <div class="shift-info">
-        <h3>11am–5pm</h3>
+        {% if shift %}
+          <h3>{{ shift.start_time.strftime('%I:%M %p') }} – {{ shift.end_time.strftime('%I:%M %p') }}</h3>
+        {% else %}
+          <h3>No shift assigned for today</h3>
+        {% endif %}
         <p id="currentDate"></p>
         <p>Service Staff</p>
       </div>
@@ -177,35 +177,83 @@
         <button id="clockInBtn" class="clock-btn">Clock In</button>
         <button id="clockOutBtn" class="clock-btn">Clock Out</button>
       </div>
+      <div id="lastLogTime" style="margin-top: 20px; font-size: 18px; color: #112378; text-align: center;"></div>
     </div>
   </div>
 
   <script>
-    function updateTime() {
+    document.addEventListener("DOMContentLoaded", function () {
+      const clockInBtn = document.getElementById('clockInBtn');
+      const clockOutBtn = document.getElementById('clockOutBtn');
       const timeEl = document.getElementById('currentTime');
       const dateEl = document.getElementById('currentDate');
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-      const formattedDate = now.toLocaleDateString(undefined, options);
-      const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      dateEl.textContent = formattedDate;
-      timeEl.textContent = formattedTime;
-    }
+      const lastLogEl = document.getElementById('lastLogTime');
 
-    setInterval(updateTime, 1000);
-    updateTime();
+      let clockedIn = sessionStorage.getItem("clockedIn") === "true";
 
-    const clockInBtn = document.getElementById('clockInBtn');
-    const clockOutBtn = document.getElementById('clockOutBtn');
+      function updateTime() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString(undefined, options);
+        timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
 
-    clockInBtn.addEventListener('click', () => {
-      clockInBtn.classList.add('active');
-      clockOutBtn.classList.remove('active');
-    });
+      function updateButtonStates() {
+        clockInBtn.disabled = clockedIn;
+        clockOutBtn.disabled = !clockedIn;
+        clockInBtn.classList.toggle('active', clockedIn);
+        clockOutBtn.classList.toggle('active', !clockedIn);
+      }
 
-    clockOutBtn.addEventListener('click', () => {
-      clockOutBtn.classList.add('active');
-      clockInBtn.classList.remove('active');
+      function sendClockAction(action) {
+        fetch('/staff_loghours', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        })
+        .then(res => res.json())
+        .then(data => {
+          const message = data.message || data.error || "Action completed.";
+          alert(message);
+
+          if (lastLogEl) {
+            lastLogEl.textContent = message;
+          }
+
+          if (data.error) {
+            setTimeout(() => window.location.href = "/staff_dashboard", 100);
+            return;
+          }
+
+          if (action === 'clock_in') {
+            clockedIn = true;
+            sessionStorage.setItem("clockedIn", "true");
+          } else if (action === 'clock_out') {
+            clockedIn = false;
+            sessionStorage.setItem("clockedIn", "false");
+
+            clockInBtn.disabled = true;
+            clockOutBtn.disabled = true;
+
+            setTimeout(() => {
+              window.location.href = "/staff_dashboard";
+            }, 2000);
+          }
+
+          updateButtonStates();
+        })
+        .catch(error => {
+          alert("Error logging hours.");
+          console.error(error);
+        });
+      }
+
+      clockInBtn.addEventListener('click', () => sendClockAction('clock_in'));
+      clockOutBtn.addEventListener('click', () => sendClockAction('clock_out'));
+
+      updateTime();
+      setInterval(updateTime, 1000);
+      updateButtonStates();
     });
   </script>
 </body>

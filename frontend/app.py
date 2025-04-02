@@ -176,7 +176,61 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-    
+@app.route("/staff_loghours", methods=["GET", "POST"])
+def staff_log_hours():
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        if request.method == "GET":
+            return redirect(url_for('login'))
+        else:
+            return jsonify({"error": "Unauthorized"}), 401
+
+    employee_id = session.get("user_id")
+    today = datetime.today().date()
+    shift = Shift.query.filter_by(shift_date=today, employee_id=employee_id).first()
+
+    if request.method == "GET":
+        return render_template("staff_loghours.html", shift=shift)
+
+    # If POST, but no shift assigned, deny action
+    if not shift:
+        return jsonify({"error": "You have no shift assigned today."}), 400
+
+    try:
+        data = request.get_json()
+        action = data.get("action")
+        now = datetime.now()
+
+        if action == "clock_in":
+            session["clock_in_time"] = now.isoformat()
+            return jsonify({"message": f"Clocked in at {now.strftime('%I:%M %p')}"})
+
+        elif action == "clock_out":
+            clock_in_str = session.pop("clock_in_time", None)
+            if not clock_in_str:
+                return jsonify({"error": "You need to clock in first."}), 400
+
+            clock_in_time = datetime.fromisoformat(clock_in_str)
+            total_hours = round((now - clock_in_time).total_seconds() / 3600, 2)
+
+            new_log = ClockRecord(
+                clockIN_time=clock_in_time,
+                clockOUT_time=now,
+                total_staff_hours=total_hours,
+                employee_id=employee_id
+            )
+            db.session.add(new_log)
+            db.session.commit()
+
+            return jsonify({
+                "message": f"Clocked out at {now.strftime('%I:%M %p')}. Total hours: {total_hours:.2f}"
+            })
+
+        return jsonify({"error": "Invalid action"}), 400
+
+    except Exception as e:
+        print("Logging error:", str(e))
+        return jsonify({"error": "Logging hours failed"}), 500
+
 
 def start_app():
     app.run(debug=True)
