@@ -156,7 +156,7 @@
   <nav>
     <ul>
       <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
-      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}" class="active">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
       <li><a href="#">TIME OFF</a></li>
       <li><a href="#">MESSAGES</a></li>
@@ -181,7 +181,6 @@
         <div>Fri</div><div>Sat</div><div>Sun</div>
       </div>
       <div class="calendar-dates">
-        <!-- Static cells for layout -->
         {% for i in range(2) %}
         <div class="calendar-cell"></div>
         {% endfor %}
@@ -193,7 +192,6 @@
 
     <div class="swap-panel">
       <div class="swap-title">Available to Swap:</div>
-
       {% if my_shift_id %}
         {% for user in other_users %}
           <div class="swap-user">
@@ -205,6 +203,16 @@
         <p>You have no shift today to swap.</p>
       {% endif %}
     </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="{{ url_for('staff_dashboard') }}">
+      <button style="background-color: #8e44ec; color: white; padding: 12px 24px; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background-color 0.3s ease;"
+      onmouseover="this.style.backgroundColor='#5a005a'"
+      onmouseout="this.style.backgroundColor='#8e44ec'">
+        ⬅ Back to Dashboard
+      </button>
+    </a>
   </div>
 </body>
 </html>
