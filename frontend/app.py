@@ -118,6 +118,30 @@ def manager_dashboard():
         return render_template("manager_dashboard.html")
     else:
         return redirect(url_for('manager_login'))
+    
+@app.route("/create_schedule", methods=["GET", "POST"])
+def create_schedule():
+    if 'logged_in' in session and session.get('user_type') == 'Manager':
+        if request.method == "POST":
+            start_date = request.form["start_date"]
+            end_date = request.form["end_date"]
+            total_hours = request.form["total_hours"]
+            shift_ids = request.form.getlist("shifts")
+
+            schedule = Schedule.createSchedule(start_date, end_date, total_hours, session['user_id'])
+
+            for shift_id in shift_ids:
+                shift = Shift.query.get(int(shift_id))
+                if shift:
+                    schedule.shifts.append(shift)
+
+            db.session.commit()
+            return redirect(url_for("manager_dashboard"))
+
+        shifts = Shift.query.all()
+        return render_template("create_schedule.html", shifts=shifts)
+
+    return redirect(url_for("manager_login"))
 
 
 def start_app():
