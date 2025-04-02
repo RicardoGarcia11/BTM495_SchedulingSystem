@@ -168,6 +168,12 @@ def staff_dashboard():
     else:
         return redirect(url_for('login'))
     
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+    
 
 def start_app():
     app.run(debug=True)
