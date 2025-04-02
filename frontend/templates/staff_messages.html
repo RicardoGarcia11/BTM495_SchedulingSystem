@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard - Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a:hover,
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 16px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 300px;
+      background-color: #f2f2f2;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-box {
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+      background-color: #ffffff;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .section h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #5a005a;
+    }
+
+    .chat-list, .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .chat-item, .contact-item {
+      padding: 10px;
+      border-radius: 10px;
+      background-color: #ffffff;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .chat-item:hover, .contact-item:hover {
+      background-color: #e0d1f7;
+    }
+
+    .chat-item.active {
+      background-color: #d1b3f7;
+      transition: background-color 0.3s ease;
+    }
+
+    .chat-window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+      padding-top: 20px;
+    }
+
+    .chat-header {
+      padding: 20px;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .chat-header .info {
+      display: flex;
+      flex-direction: column;
+      color: #5a005a;
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.sent {
+      background-color: #8e44ec;
+      color: #fff;
+      align-self: flex-end;
+    }
+
+    .message.received {
+      background-color: #e0e0e0;
+      color: #000;
+      align-self: flex-start;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-top: 1px solid #ddd;
+      background-color: #ffffff;
+    }
+
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    .chat-input button {
+      background-color: #8e44ec;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .chat-input button:hover {
+      background-color: #5a005a;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">SCHEDULE</a></li>
+      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="#">CREATE AVAILABILITY</a></li>
+      <li><a href="#" class="active">MESSAGES</a></li>
+      <li><a href="#">TIME OFF</a></li>
+      <li><a href="#">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="/logout">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="search-box">
+        <input type="text" placeholder="Search">
+      </div>
+      <div class="section">
+        <h3>Chats</h3>
+        <div class="chat-list">
+          <div class="chat-item" onclick="selectChat(this)">Ann Nguyen</div>
+          <div class="chat-item" onclick="selectChat(this)">Carl Kassatly</div>
+          <div class="chat-item" onclick="selectChat(this)">Xinyu Ye</div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Contacts</h3>
+        <div class="contact-list">
+          <div class="contact-item">Isiah Campbell</div>
+          <div class="contact-item">Ricardo Garcia-Awad</div>
+          <div class="contact-item">Justin Hua</div>
+          <div class="contact-item">Guillermo Cuevas-Feijoo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="info">
+          <strong id="chat-title">Ann Nguyen</strong>
+          <small>Online - Last seen 2:02pm</small>
+        </div>
+      </div>
+      <div class="chat-body" id="chat-body">
+        <div class="message received">Hi Ann! Are you joining the meeting today?</div>
+        <div class="message received">Yes, I’ll be there in 5 minutes.</div>
+        <div class="message sent">Perfect, see you then!</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Type your message here...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatMessages = {
+      "Ann Nguyen": [
+        ["Hi Ann! Are you joining the meeting today?", "received"],
+        ["Yes, I’ll be there in 5 minutes.", "received"],
+        ["Perfect, see you then!", "sent"]
+      ],
+      "Carl Kassatly": [
+        ["Hey Carl, great job on the presentation!", "sent"],
+        ["Thanks a lot! Couldn't have done it without the team.", "received"]
+      ],
+      "Xinyu Ye": [
+        ["Hey Xinyu, did you upload the report?", "sent"],
+        ["Yes, it’s in the shared folder.", "received"]
+      ]
+    };
+
+    function selectChat(element) {
+      document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+      element.classList.add('active');
+      const chatTitle = element.innerText;
+      document.getElementById('chat-title').innerText = chatTitle;
+
+      const chatBody = document.getElementById('chat-body');
+      chatBody.innerHTML = '';
+
+      const messages = chatMessages[chatTitle] || [];
+      messages.forEach(([text, type]) => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}`;
+        msgDiv.textContent = text;
+        chatBody.appendChild(msgDiv);
+      });
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (text) {
+        const chatBody = document.getElementById('chat-body');
+        const message = document.createElement('div');
+        message.className = 'message sent';
+        message.textContent = text;
+        chatBody.appendChild(message);
+        input.value = '';
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
