@@ -23,10 +23,6 @@ with app.app_context():
     db.create_all()
     print("Database initialized!")
 
-@app.route("/")
-def home():
-    return render_template("home_page.html")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -191,7 +187,11 @@ def staff_dashboard():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("login"))
+    return redirect(url_for("home"))
+
+@app.route("/")
+def home():
+    return render_template("home_page.html")
 
 @app.route("/staff_loghours", methods=["GET", "POST"])
 def staff_log_hours():

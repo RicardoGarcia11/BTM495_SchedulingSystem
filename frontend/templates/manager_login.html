@@ -24,14 +24,14 @@
     }
 
     .title {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
       color: #333;
       margin-bottom: 15px;
       text-align: center;
     }
 
-    .card {
+    .square {
       width: 300px;
       padding: 20px;
       border: 4px solid #8e44ec;
@@ -84,6 +84,25 @@
       background-color: #6c2cb3;
     }
 
+    .home-button {
+      margin-top: 10px;
+      display: block;
+      width: 100%;
+      text-align: center;
+      background-color: #8e44ec;
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .home-button:hover {
+      background-color: #6c2cb3;
+    }
+
     .error {
       color: red;
       font-size: 12px;
@@ -97,22 +116,21 @@
 
   <div class="container">
     <div class="title">Manager Login</div>
-    <div class="card">
+    <div class="square">
       <form method="POST" action="/manager_login">
         <label for="email">Email</label>
-        <input type="email" name="email" id="email" placeholder="Enter your email" required />
+        <input type="email" id="email" name="email" placeholder="Enter your email" required />
 
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter your password" required />
-
-        <input type="hidden" name="user_type" value="Manager" />
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
 
         {% if error %}
-         <div class="error" id="error-message">{{ error }}</div>
+          <div class="error">{{ error }}</div>
         {% endif %}
 
         <button type="submit">Login</button>
       </form>
+      <a href="{{ url_for('home') }}" class="home-button">← Back to Home</a>
     </div>
   </div>
 

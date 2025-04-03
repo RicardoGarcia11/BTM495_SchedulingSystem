@@ -67,7 +67,7 @@
       font-size: 14px;
     }
 
-    button {
+    button, .home-button {
       width: 100%;
       padding: 10px;
       background-color: #8e44ec;
@@ -78,9 +78,12 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 10px;
     }
 
-    button:hover {
+    button:hover, .home-button:hover {
       background-color: #6c2cb3;
     }
 
@@ -111,6 +114,7 @@
 
         <button type="submit">Login</button>
       </form>
+      <a href="{{ url_for('home') }}" class="home-button">← Back to Home</a>
     </div>
   </div>
 
