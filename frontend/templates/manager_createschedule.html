@@ -291,10 +291,10 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
       <li><a href="#" class="active">CREATE SCHEDULE</a></li>
       <li><a href="#">REQUESTS</a></li>
-      <li><a href="#">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
       <li><a href="#">REPORTS</a></li>
     </ul>
     <div class="dropdown">

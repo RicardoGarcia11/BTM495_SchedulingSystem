@@ -131,8 +131,8 @@ def manager_dashboard():
     else:
         return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
 
-@app.route("/create_schedule", methods=["GET", "POST"])
-def create_schedule():
+@app.route("/manager_createschedule", methods=["GET", "POST"])
+def manager_createschedule():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         if request.method == "POST":
             print(" FORM SUBMITTED")
@@ -161,9 +161,17 @@ def create_schedule():
 
         
         shifts = Shift.query.filter(Shift.shift_date >= datetime.today().date()).all()
-        return render_template("create_schedule.html", shifts=shifts)
+        return render_template("manager_createschedule.html", shifts=shifts)
 
     return redirect(url_for("manager_login"))
+
+@app.route("/manager_messages", methods=["GET"])
+def manager_messages():
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for('login'))
+
+    return render_template("manager_messages.html")
+
 
 @app.route("/staff_dashboard")
 def staff_dashboard():
