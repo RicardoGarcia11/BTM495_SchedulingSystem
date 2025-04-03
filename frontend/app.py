@@ -362,8 +362,11 @@ def staff_createavailability():
             return jsonify({"error": "Something went wrong."}), 500
     return render_template("staff_createavailability.html")
 
-
-
+@app.route("/manager_report_detail")
+def manager_report_detail():
+    section = request.args.get("section", "Unknown Section")
+    label = request.args.get("label", "Unknown Report")
+    return render_template("manager_report_detail.html", section=section, label=label)
 
 
 def start_app():

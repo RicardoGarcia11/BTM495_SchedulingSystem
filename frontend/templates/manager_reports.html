@@ -213,5 +213,19 @@
     </div>
 
   </div>
+
+  <script>
+    document.querySelectorAll('.view-link').forEach((link, index) => {
+      link.addEventListener('click', () => {
+        const section = link.closest('.request-box').querySelector('h3').innerText;
+        const label = link.parentElement.innerText.split('View')[0].trim();
+        
+        const encodedSection = encodeURIComponent(section);
+        const encodedLabel = encodeURIComponent(label);
+  
+        window.location.href = `/manager_report_detail?section=${encodedSection}&label=${encodedLabel}`;
+      });
+    });
+  </script>  
 </body>
 </html>
