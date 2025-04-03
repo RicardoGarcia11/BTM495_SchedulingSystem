@@ -293,6 +293,13 @@ def staff_timeoff():
 
     return render_template("staff_timeoff.html", user=user)
 
+@app.route("/staff_messages", methods=["GET"])
+def staff_messages():
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        return redirect(url_for('login'))
+    
+    return render_template("staff_messages.html")
+
 
 def start_app():
     app.run(debug=True)
