@@ -11,7 +11,8 @@ from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Mess
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) #added '..' to point to the base directory
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True) # Ensure 'instance' folder always exists when the app runs
 db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -264,16 +265,25 @@ def staff_shiftswap():
 
 @app.route("/staff_timeoff", methods=["GET", "POST"])
 def staff_timeoff():
+<<<<<<< HEAD
     if "logged_in" not in session or session.get("user_type") != "Service_Staff":
         flash("You must be logged in as Service Staff to access this page.", "warning")
         return redirect(url_for("login"))
 
     employee_id = session.get("user_id")
+=======
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        return redirect(url_for('login'))
+
+    employee_id = session.get("user_id")
+    user = User.query.get(employee_id)
+>>>>>>> 34b482629bdf8948d7f9c9739a921eb25d80d4b8
 
     if request.method == "POST":
         try:
             start_date = request.form.get("start_date")
             end_date = request.form.get("end_date")
+<<<<<<< HEAD
             reason = request.form.get("reason")
             file = request.files.get("upload")
 
@@ -319,6 +329,32 @@ def staff_timeoff():
 
 
 
+=======
+            full_day = request.form.get("full_day")
+            total_leave_hours = 8 if full_day else 4
+
+            time_off = TimeOff.createTimeOff(
+                start_leave_date=start_date,
+                end_leave_date=end_date,
+                total_leave_hours=total_leave_hours,
+                employee_id=employee_id
+            )
+            db.session.commit()
+            return redirect(url_for("staff_dashboard"))
+
+        except Exception as e:
+            print("Time off error:", str(e))
+            return render_template("staff_timeoff.html", user=user, error="Submission failed.")
+
+    return render_template("staff_timeoff.html", user=user)
+
+@app.route("/staff_messages", methods=["GET"])
+def staff_messages():
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        return redirect(url_for('login'))
+    
+    return render_template("staff_messages.html")
+>>>>>>> 34b482629bdf8948d7f9c9739a921eb25d80d4b8
 
 
 def start_app():

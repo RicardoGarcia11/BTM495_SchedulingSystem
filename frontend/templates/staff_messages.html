@@ -251,12 +251,12 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
-      <li><a href="#" class="active">MESSAGES</a></li>
-      <li><a href="#">TIME OFF</a></li>
-      <li><a href="#">LOG HOURS</a></li>
+      <li><a href="{{ url_for('staff_messages') }}" class="active">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Staff</div>
@@ -274,18 +274,18 @@
       <div class="section">
         <h3>Chats</h3>
         <div class="chat-list">
-          <div class="chat-item" onclick="selectChat(this)">Ann Nguyen</div>
-          <div class="chat-item" onclick="selectChat(this)">Carl Kassatly</div>
-          <div class="chat-item" onclick="selectChat(this)">Xinyu Ye</div>
+          <div class="chat-item" onclick="selectChat(this)">Manager</div>
+          <div class="chat-item" onclick="selectChat(this)">Employee 1</div>
+          <div class="chat-item" onclick="selectChat(this)">Employee 2</div>
         </div>
       </div>
       <div class="section">
         <h3>Contacts</h3>
         <div class="contact-list">
-          <div class="contact-item">Isiah Campbell</div>
-          <div class="contact-item">Ricardo Garcia-Awad</div>
-          <div class="contact-item">Justin Hua</div>
-          <div class="contact-item">Guillermo Cuevas-Feijoo</div>
+          <div class="contact-item">Employee 3</div>
+          <div class="contact-item">Employee 4</div>
+          <div class="contact-item">Employee 5</div>
+          <div class="contact-item">Employee 6</div>
         </div>
       </div>
     </div>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <div class="chat-body" id="chat-body">
-        <div class="message received">Hi Ann! Are you joining the meeting today?</div>
+        <div class="message received">Hi! Are you joining the meeting today?</div>
         <div class="message received">Yes, I’ll be there in 5 minutes.</div>
         <div class="message sent">Perfect, see you then!</div>
       </div>
@@ -311,16 +311,16 @@
 
   <script>
     const chatMessages = {
-      "Ann Nguyen": [
-        ["Hi Ann! Are you joining the meeting today?", "received"],
+      "Manager": [
+        ["Hi! Are you joining the meeting today?", "received"],
         ["Yes, I’ll be there in 5 minutes.", "received"],
         ["Perfect, see you then!", "sent"]
       ],
-      "Carl Kassatly": [
+      "Employee 1": [
         ["Hey Carl, great job on the presentation!", "sent"],
         ["Thanks a lot! Couldn't have done it without the team.", "received"]
       ],
-      "Xinyu Ye": [
+      "Employee 2": [
         ["Hey Xinyu, did you upload the report?", "sent"],
         ["Yes, it’s in the shared folder.", "received"]
       ]

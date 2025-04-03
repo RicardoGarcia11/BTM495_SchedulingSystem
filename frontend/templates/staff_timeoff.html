@@ -137,11 +137,19 @@
 <body>
   <nav>
     <ul>
+<<<<<<< HEAD
       <li><a href="{{ url_for('staff_dashboard') }}" class="active">SCHEDULE</a></li>
       <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
       <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
       <li><a href="#">MESSAGES</a></li>
+=======
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="#">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}" class="active">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+>>>>>>> 34b482629bdf8948d7f9c9739a921eb25d80d4b8
       <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
@@ -162,6 +170,7 @@
     {% endwith %}
 
     <form class="time-off-form" method="POST" enctype="multipart/form-data">
+<<<<<<< HEAD
       <label for="start_date">Start Date:</label>
       <input type="date" id="start_date" name="start_date" required>
 
@@ -182,6 +191,69 @@
       <input type="file" id="upload" name="upload">
 
       <button type="submit">Submit</button>
+=======
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Date of Request:</label>
+          <input type="date" name="date_request" required />
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>Employee Name:</label>
+          <input type="text" name="employee_name" value="{{ user.employee_name }}" required /> <!--auto fills name, but leaves user the ability to edit it-->
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>User ID#:</label>
+          <input type="text" name="user_id" value="{{ user.employee_id }}" required /> <!--auto fills ID, but leaves user the ability to edit it-->
+        </div>
+      </div>
+      <hr class="form-section"/>
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Start Date:</label>
+          <input type="date" name="start_date" required />
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label>End Date:</label>
+          <input type="date" name="end_date" required />
+        </div>
+      </div>
+      <div class="form-section">
+        <label>Half Day (4 Hours) - please indicate if:</label>
+        <div class="checkbox-group" style="grid-template-columns: repeat(2, 1fr);">
+          <label><input type="checkbox" name="half_first" /> First half</label>
+          <label><input type="checkbox" name="half_second" /> Second half</label>
+          <label><input type="checkbox" name="full_day" /> Full Day (8 Hours)</label>
+        </div>
+      </div>
+      <div class="form-section">
+        <label>Reason for Time Off:</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" /> Vacation</label>
+          <label><input type="checkbox" /> Personal Leave</label>
+          <label><input type="checkbox" /> Family/Medical Leave</label>
+          <label><input type="checkbox" /> Sick</label>
+          <label><input type="checkbox" /> Voting Leave</label>
+          <label><input type="checkbox" /> Bereavement</label>
+          <label><input type="checkbox" /> Military Leave</label>
+          <label><input type="checkbox" /> Maternity Leave</label>
+          <label><input type="checkbox" /> Jury Duty</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-section" style="flex: 1;">
+          <label>Explanation (optional):</label>
+          <textarea name="explanation"></textarea>
+        </div>
+        <div class="form-section" style="flex: 1;">
+          <label for="upload">Upload File (Optional):</label>
+          <div class="upload-section">
+            <input type="file" id="upload" name="upload" />
+            <label for="upload" class="upload-btn">Upload</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">Submit</button>
+>>>>>>> 34b482629bdf8948d7f9c9739a921eb25d80d4b8
     </form>
 
     <table class="requests-table">
