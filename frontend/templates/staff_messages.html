@@ -282,10 +282,10 @@
       <div class="section">
         <h3>Contacts</h3>
         <div class="contact-list">
-          <div class="contact-item">Employee 3</div>
-          <div class="contact-item">Employee 4</div>
-          <div class="contact-item">Employee 5</div>
-          <div class="contact-item">Employee 6</div>
+          <div class="contact-item" onclick="selectChat(this)">Employee 3</div>
+          <div class="contact-item" onclick="selectChat(this)">Employee 4</div>
+          <div class="contact-item" onclick="selectChat(this)">Employee 5</div>
+          <div class="contact-item" onclick="selectChat(this)">Employee 6</div>
         </div>
       </div>
     </div>
@@ -325,39 +325,73 @@
         ["Yes, it’s in the shared folder.", "received"]
       ]
     };
-
+  
+    let currentChat = null;
+  
     function selectChat(element) {
-      document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.chat-item, .contact-item').forEach(item =>
+        item.classList.remove('active')
+      );
       element.classList.add('active');
-      const chatTitle = element.innerText;
-      document.getElementById('chat-title').innerText = chatTitle;
-
-      const chatBody = document.getElementById('chat-body');
-      chatBody.innerHTML = '';
-
-      const messages = chatMessages[chatTitle] || [];
+  
+      currentChat = element.innerText;
+      document.getElementById("chat-title").innerText = currentChat;
+  
+      const chatBody = document.getElementById("chat-body");
+      chatBody.innerHTML = "";
+  
+      const messages = chatMessages[currentChat] || [];
       messages.forEach(([text, type]) => {
-        const msgDiv = document.createElement('div');
+        const msgDiv = document.createElement("div");
         msgDiv.className = `message ${type}`;
         msgDiv.textContent = text;
         chatBody.appendChild(msgDiv);
       });
+  
       chatBody.scrollTop = chatBody.scrollHeight;
     }
-
+  
     function sendMessage() {
-      const input = document.getElementById('message-input');
+      const input = document.getElementById("message-input");
       const text = input.value.trim();
-      if (text) {
-        const chatBody = document.getElementById('chat-body');
-        const message = document.createElement('div');
-        message.className = 'message sent';
+      if (text && currentChat) {
+        const chatBody = document.getElementById("chat-body");
+        const message = document.createElement("div");
+        message.className = "message sent";
         message.textContent = text;
         chatBody.appendChild(message);
-        input.value = '';
+        input.value = "";
         chatBody.scrollTop = chatBody.scrollHeight;
+  
+        // Save to messages
+        if (!chatMessages[currentChat]) {
+          chatMessages[currentChat] = [];
+        }
+        chatMessages[currentChat].push([text, "sent"]);
+  
+        // If it was a contact, move it to Chats
+        const existingChat = Array.from(document.querySelectorAll(".chat-item"))
+          .find(item => item.innerText === currentChat);
+        if (!existingChat) {
+          const contact = Array.from(document.querySelectorAll(".contact-item"))
+            .find(item => item.innerText === currentChat);
+          if (contact) {
+            const newChat = contact.cloneNode(true);
+            newChat.className = "chat-item active";
+            newChat.onclick = () => selectChat(newChat);
+            document.querySelector(".chat-list").appendChild(newChat);
+            contact.remove();
+  
+            // Remove active class from others
+            document.querySelectorAll('.chat-item').forEach(item =>
+              item.classList.remove('active')
+            );
+            newChat.classList.add('active');
+          }
+        }
       }
     }
   </script>
+  
 </body>
 </html>
