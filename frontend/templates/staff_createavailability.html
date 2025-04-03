@@ -6,15 +6,13 @@
   <title>Staff Dashboard - Create Availability</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
     body {
       font-family: 'Inter', sans-serif;
       background-color: #ffffff;
+      margin: 0;
+      padding: 0;
     }
+
     nav {
       background-color: #8e44ec;
       display: flex;
@@ -23,11 +21,15 @@
       height: 60px;
       padding: 0 20px;
     }
+
     nav ul {
       list-style: none;
       display: flex;
       gap: 20px;
+      margin: 0;
+      padding: 0;
     }
+
     nav ul li a {
       color: white;
       text-decoration: none;
@@ -37,13 +39,16 @@
       border-radius: 4px;
       transition: background-color 0.3s ease;
     }
+
     nav ul li a:hover,
     nav ul li a.active {
       background-color: #5a005a;
     }
+
     .dropdown {
       position: relative;
     }
+
     .dropdown-toggle {
       color: white;
       font-size: 16px;
@@ -51,6 +56,7 @@
       padding: 14px 16px;
       cursor: pointer;
     }
+
     .dropdown-menu {
       display: none;
       position: absolute;
@@ -61,6 +67,7 @@
       overflow: hidden;
       z-index: 1;
     }
+
     .dropdown-menu a {
       color: white;
       padding: 12px 16px;
@@ -68,18 +75,22 @@
       text-decoration: none;
       font-weight: bold;
     }
+
     .dropdown-menu a:hover {
       background-color: #5a005a;
     }
+
     .dropdown:hover .dropdown-menu {
       display: block;
     }
+
     .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 80px 20px 40px;
     }
+
     .calendar-wrapper {
       display: flex;
       gap: 100px;
@@ -88,20 +99,24 @@
       width: 100%;
       max-width: 1000px;
     }
+
     .calendar-container {
       max-width: 600px;
     }
+
     .calendar-label {
       font-size: 32px;
       font-weight: bold;
       margin-bottom: 30px;
     }
+
     .calendar-title {
       font-size: 22px;
       font-weight: bold;
       color: #8e44ec;
       margin-bottom: 20px;
     }
+
     .calendar-days,
     .calendar-dates {
       display: grid;
@@ -109,11 +124,13 @@
       gap: 10px;
       text-align: center;
     }
+
     .calendar-days div {
       font-weight: bold;
       font-size: 16px;
       padding: 10px 0;
     }
+
     .calendar-cell {
       background-color: white;
       padding: 15px 0;
@@ -122,40 +139,42 @@
       transition: background-color 0.3s ease, transform 0.2s ease;
       font-size: 16px;
     }
+
     .calendar-cell:hover {
       background-color: #8e44ec;
       color: white;
       transform: scale(1.05);
     }
+
     .calendar-cell.selected {
       background-color: #8e44ec;
       color: white;
     }
+
     .swap-panel {
       max-width: 300px;
     }
-    .swap-label {
-      font-size: 32px;
-      font-weight: bold;
-      margin-bottom: 30px;
-    }
+
     .swap-title {
       font-size: 22px;
       font-weight: bold;
       margin-bottom: 20px;
       color: #8e44ec;
     }
+
     .shift-block {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 20px;
     }
+
     .shift-time {
       font-size: 16px;
       font-weight: bold;
       margin-right: 10px;
     }
+
     .add-button {
       font-weight: bold;
       border: none;
@@ -166,19 +185,23 @@
       color: black;
       transition: background-color 0.3s ease;
     }
+
     .add-button:hover {
       background-color: #c49dff;
     }
+
     .add-button.added {
       background-color: #6200ea;
       color: white;
-      cursor: default;
+      cursor: pointer;
     }
+
     .add-button.disabled {
       background-color: #eee;
       color: #999;
       cursor: not-allowed;
     }
+
     .summary-box {
       margin-top: 60px;
       padding: 20px;
@@ -190,15 +213,18 @@
       height: 250px;
       overflow-y: auto;
     }
+
     .summary-box h3 {
       font-size: 22px;
       font-weight: bold;
       margin-bottom: 15px;
     }
+
     .summary-entry {
       margin-bottom: 12px;
       font-size: 16px;
     }
+
     .submit-button {
       margin-top: 20px;
       background-color: #3498db;
@@ -211,6 +237,7 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     .submit-button:hover {
       background-color: #2e86c1;
     }
@@ -225,35 +252,38 @@
     const selectedShiftsByDay = {};
 
     function handleAdd(button, shiftLabel, time) {
-      button.classList.add('added');
-      button.textContent = 'Added';
-      button.disabled = true;
-
       const selectedCell = document.querySelector('.calendar-cell.selected');
-      if (selectedCell) {
-        const cellIndex = [...selectedCell.parentNode.children].indexOf(selectedCell);
-        const dayName = dayMap[cellIndex];
-        const dayNum = selectedCell.textContent.trim();
-        const fullDate = `April ${dayNum} - ${dayName}`;
+      if (!selectedCell) return;
 
-        if (!selectedShiftsByDay[dayNum]) {
-          selectedShiftsByDay[dayNum] = {
-            label: fullDate,
-            shifts: []
-          };
-        }
+      const cellIndex = [...selectedCell.parentNode.children].indexOf(selectedCell);
+      const dayName = dayMap[cellIndex];
+      const dayNum = selectedCell.textContent.trim();
+      const fullDate = `April ${dayNum} - ${dayName}`;
 
-        if (!selectedShiftsByDay[dayNum].shifts.includes(shiftLabel)) {
-          selectedShiftsByDay[dayNum].shifts.push(shiftLabel);
-        }
-
-        applyConflictLogic(shiftLabel);
-        renderSummary();
+      if (!selectedShiftsByDay[dayNum]) {
+        selectedShiftsByDay[dayNum] = {
+          label: fullDate,
+          shifts: []
+        };
       }
+
+      if (!selectedShiftsByDay[dayNum].shifts.includes(shiftLabel)) {
+        selectedShiftsByDay[dayNum].shifts.push(shiftLabel);
+        button.classList.add('added');
+        button.textContent = 'Undo';
+        applyConflictLogic(shiftLabel);
+      } else {
+        selectedShiftsByDay[dayNum].shifts = selectedShiftsByDay[dayNum].shifts.filter(s => s !== shiftLabel);
+        button.classList.remove('added');
+        button.textContent = 'Add';
+        clearConflictDisables();
+      }
+
+      renderSummary();
     }
 
     function applyConflictLogic(addedLabel) {
-      const buttons = document.querySelectorAll('#shift-list .add-button:not(.added):not(.disabled)');
+      const buttons = document.querySelectorAll('#shift-list .add-button:not(.added)');
       if (addedLabel === 'Afternoon' || addedLabel === 'Evening') {
         buttons.forEach(btn => {
           const shiftText = btn.previousSibling.textContent;
@@ -274,11 +304,20 @@
       }
     }
 
+    function clearConflictDisables() {
+      const buttons = document.querySelectorAll('#shift-list .add-button.disabled');
+      buttons.forEach(btn => {
+        btn.classList.remove('disabled');
+        btn.disabled = false;
+      });
+    }
+
     function renderSummary() {
       const summaryBox = document.getElementById('summary-box');
       summaryBox.innerHTML = '<h3>Selected Availability</h3>';
 
       for (const day in selectedShiftsByDay) {
+        if (selectedShiftsByDay[day].shifts.length === 0) continue;
         const entry = document.createElement('div');
         entry.className = 'summary-entry';
 
