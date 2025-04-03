@@ -12,7 +12,8 @@ from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Mess
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # go up one level to project root
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)  # make sure instance folder exists
 db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
