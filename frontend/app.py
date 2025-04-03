@@ -172,6 +172,14 @@ def manager_messages():
 
     return render_template("manager_messages.html")
 
+@app.route('/manager_reports')
+def manager_reports():
+    return render_template('manager_reports.html')
+
+@app.route('/manager_requests')
+def manager_requests():
+    return render_template('manager_requests.html')
+
 
 @app.route("/staff_dashboard")
 def staff_dashboard():

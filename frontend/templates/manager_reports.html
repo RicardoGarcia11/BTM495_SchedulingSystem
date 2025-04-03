@@ -42,7 +42,38 @@
     nav ul li a.active {
       background-color: #5a005a;
     }
-
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      z-index: 1;
+      border-radius: 4px;
+    }
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 16px;
+      font-weight: bold;
+    }
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
     .requests-container {
       padding: 40px 20px;
       margin-top: 40px;
@@ -101,12 +132,18 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">CREATE SCHEDULE</a></li>
-      <li><a href="#">REQUESTS</a></li>
-      <li><a href="#">MESSAGES</a></li>
-      <li><a href="#" class="active">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}" >REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}" class="active">REPORTS</a></li>
     </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="/logout">LOG OUT</a>
+      </div>
+    </div>
   </nav>
 
   <div class="requests-container">

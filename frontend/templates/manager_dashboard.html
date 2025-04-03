@@ -129,11 +129,11 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#" class="active">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_dashboard') }}" class="active">SCHEDULE</a></li>
       <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
-      <li><a href="#">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
       <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-      <li><a href="#">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Manager</div>
