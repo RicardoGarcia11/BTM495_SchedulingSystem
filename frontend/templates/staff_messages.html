@@ -251,12 +251,12 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
-      <li><a href="#" class="active">MESSAGES</a></li>
-      <li><a href="#">TIME OFF</a></li>
-      <li><a href="#">LOG HOURS</a></li>
+      <li><a href="{{ url_for('staff_messages') }}" class="active">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Staff</div>

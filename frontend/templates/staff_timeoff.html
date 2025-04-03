@@ -212,12 +212,12 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
-      <li><a href="#" class="active">TIME OFF</a></li>
-      <li><a href="#">MESSAGES</a></li>
-      <li><a href="#">LOG HOURS</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}" class="active">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Staff</div>
@@ -235,11 +235,11 @@
         </div>
         <div class="form-section" style="flex: 1;">
           <label>Employee Name:</label>
-          <input type="text" name="employee_name" required />
+          <input type="text" name="employee_name" value="{{ user.employee_name }}" required /> <!--auto fills name, but leaves user the ability to edit it-->
         </div>
         <div class="form-section" style="flex: 1;">
           <label>User ID#:</label>
-          <input type="text" name="user_id" required />
+          <input type="text" name="user_id" value="{{ user.employee_id }}" required /> <!--auto fills ID, but leaves user the ability to edit it-->
         </div>
       </div>
       <hr class="form-section"/>
