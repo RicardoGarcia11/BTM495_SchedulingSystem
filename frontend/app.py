@@ -1,7 +1,7 @@
 import os
 import sys
 from datetime import datetime
-from flask import Flask, request, redirect, url_for, render_template, jsonify, session
+from flask import Flask, request, redirect, url_for, render_template, jsonify, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -261,6 +261,63 @@ def staff_shiftswap():
         my_shift_id=my_shift.shift_id if my_shift else None,
         other_users=other_users
     )
+
+@app.route("/staff_timeoff", methods=["GET", "POST"])
+def staff_timeoff():
+    if "logged_in" not in session or session.get("user_type") != "Service_Staff":
+        flash("You must be logged in as Service Staff to access this page.", "warning")
+        return redirect(url_for("login"))
+
+    employee_id = session.get("user_id")
+
+    if request.method == "POST":
+        try:
+            start_date = request.form.get("start_date")
+            end_date = request.form.get("end_date")
+            reason = request.form.get("reason")
+            file = request.files.get("upload")
+
+            if not start_date or not end_date or not reason:
+                flash("All required fields must be filled.", "danger")
+                return redirect(url_for("staff_timeoff"))
+
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+            # Save file if uploaded
+            filename = None
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            time_off = TimeOff(
+                start_leave_date=start_date,
+                end_leave_date=end_date,
+                total_leave_hours=0,  # Not applicable in your case
+                employee_id=employee_id,
+                reason=reason,
+                status="Pending",
+                notes=None,
+                file_name=filename
+            )
+
+            db.session.add(time_off)
+            db.session.commit()
+
+            flash("Time off request submitted successfully!", "success")
+            return redirect(url_for("staff_timeoff"))
+
+        except Exception as e:
+            print("Error submitting request:", str(e))
+            flash("There was a problem submitting your request. Try again.", "danger")
+            return redirect(url_for("staff_timeoff"))
+
+    # GET: show previous requests
+    previous_requests = TimeOff.query.filter_by(employee_id=employee_id).order_by(TimeOff.start_leave_date.desc()).all()
+
+    return render_template("staff_timeoff.html", requests=previous_requests)
+
+
 
 
 

@@ -129,20 +129,20 @@
 <body>
   <nav>
     <ul>
-      <li><a href="#" class="active">SCHEDULE</a></li>
-      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
-      <li><a href="#">CREATE AVAILABILITY</a></li>
-      <li><a href="#">TIME OFF</a></li>
-      <li><a href="#">MESSAGES</a></li>
-      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+        <li><a href="{{ url_for('staff_dashboard') }}" class="active">SCHEDULE</a></li>
+        <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+        <li><a href="#">CREATE AVAILABILITY</a></li>
+        <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+        <li><a href="#">MESSAGES</a></li>
+        <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
-      <div class="dropdown-toggle">Staff</div>
-      <div class="dropdown-menu">
-        <a href="{{ url_for('logout') }}">LOG OUT</a>
-      </div>
+        <div class="dropdown-toggle">Staff</div>
+        <div class="dropdown-menu">
+            <a href="{{ url_for('logout') }}">LOG OUT</a>
+        </div>
     </div>
-  </nav>
+</nav>
   <div class="calendar-container">
     <div class="calendar-title">January 2025</div>
     <div class="calendar-days">

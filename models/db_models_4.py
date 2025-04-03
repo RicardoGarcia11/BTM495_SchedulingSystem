@@ -300,20 +300,28 @@ class TimeOff(db.Model):
     time_off_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     start_leave_date = db.Column(db.Date, nullable=False)
     end_leave_date = db.Column(db.Date, nullable=False)
-    total_leave_hours = db.Column(db.Numeric(5, 2), nullable=False)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False) 
+    total_leave_hours = db.Column(db.Numeric(5, 2), default=0)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
+    reason = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(50), default='Pending')
+    notes = db.Column(db.Text, nullable=True)
+    file_name = db.Column(db.String(255), nullable=True)
 
     @staticmethod
-    def createTimeOff(start_leave_date, end_leave_date, total_leave_hours, employee_id):
+    def createTimeOff(start_leave_date, end_leave_date, total_leave_hours, employee_id, reason=None, file_name=None):
         time_off = TimeOff(
             start_leave_date=start_leave_date,
             end_leave_date=end_leave_date,
             total_leave_hours=total_leave_hours,
-            employee_id=employee_id
+            employee_id=employee_id,
+            reason=reason,
+            file_name=file_name,
+            status="Pending"
         )
         db.session.add(time_off)
         db.session.commit()
         return time_off
+
 
 class ClockRecord(db.Model):
     __tablename__ = 'clock_record'
