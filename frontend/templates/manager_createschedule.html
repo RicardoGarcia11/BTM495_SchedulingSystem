@@ -77,15 +77,20 @@
     }
     .schedule-container {
       margin: 40px auto;
-      padding: 0 20px;
+      padding: 0 20px 60px;
       max-width: 1200px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 40px;
+      position: relative;
     }
     .schedule-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     .schedule-table th,
     .schedule-table td {
@@ -95,7 +100,7 @@
       min-width: 100px;
       vertical-align: middle;
       height: 60px;
-      border-radius: 8px; /* Rounded corners for cells */
+      border-radius: 8px;
     }
     .schedule-table td:first-child {
       border: 2px solid #8e44ec;
@@ -106,7 +111,6 @@
     .schedule-table thead tr th {
       border: 2px solid #8e44ec;
       color: #000;
-      position: relative;
       background-color: #f9f9f9;
       font-weight: 600;
     }
@@ -129,6 +133,12 @@
       background-color: #5a005a;
       color: white;
       font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
     }
     .undo-btn {
       margin-top: 6px;
@@ -140,16 +150,14 @@
       padding: 2px 6px;
     }
     .submit-btn {
-      position: absolute;
-      right: -80px;
-      top: 50%;
-      transform: translateY(-50%);
+      display: block;
+      margin: 40px auto 0;
       background-color: #007AFF;
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12px;
+      border-radius: 8px;
+      padding: 14px 32px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -157,6 +165,13 @@
     }
     .submit-btn:hover {
       background-color: #2980b9;
+    }
+    .confirmation-message {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: green;
+      margin-top: 20px;
     }
     h2 {
       font-size: 28px;
@@ -201,25 +216,14 @@
       emptyTh.textContent = "";
       daysRow.appendChild(emptyTh);
 
-      weekDates.forEach((day, index) => {
+      weekDates.forEach(day => {
         const th = document.createElement('th');
         th.textContent = day;
-
-        if (index === 6) {
-          const submit = document.createElement('button');
-          submit.textContent = 'Submit';
-          submit.className = 'submit-btn';
-          th.style.position = 'relative';
-          th.appendChild(submit);
-        }
-
         daysRow.appendChild(th);
       });
 
       const employees = 6;
       const columns = 7;
-      const availablePerColumn = Array(columns).fill(0);
-
       const availableMatrix = Array.from({ length: employees }, () => Array(columns).fill(false));
 
       for (let col = 0; col < columns; col++) {
@@ -255,6 +259,32 @@
         }
         body.appendChild(tr);
       }
+
+      const submitBtn = document.querySelector('.submit-btn');
+      submitBtn.addEventListener('click', () => {
+        
+        const assignedCells = document.querySelectorAll('.assigned-cell');
+        assignedCells.forEach(cell => {
+          const td = cell.parentElement;
+          td.innerHTML = '<div class="assigned-cell">Assigned</div>';
+        });
+
+        
+        const availableButtons = document.querySelectorAll('.available-btn');
+        availableButtons.forEach(btn => {
+          btn.disabled = true;
+          btn.style.cursor = 'not-allowed';
+          btn.style.opacity = '0.6';
+        });
+
+        
+        if (!document.querySelector('.confirmation-message')) {
+          const confirmation = document.createElement('div');
+          confirmation.className = 'confirmation-message';
+          confirmation.textContent = 'Schedule successfully submitted!';
+          document.querySelector('.schedule-container').appendChild(confirmation);
+        }
+      });
     });
   </script>
 </head>
@@ -281,9 +311,9 @@
       <thead>
         <tr id="days-row"></tr>
       </thead>
-      <tbody>
-      </tbody>
+      <tbody></tbody>
     </table>
+    <button class="submit-btn">Submit Schedule</button>
   </div>
 </body>
 </html>

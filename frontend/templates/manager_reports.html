@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Dashboard - Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7fa;
+    }
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      transition: background-color 0.3s ease;
+      border-radius: 4px;
+    }
+    nav ul li a:hover,
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+
+    .requests-container {
+      padding: 40px 20px;
+      margin-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .request-box {
+      background-color: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      flex: 1 1 calc(50% - 40px);
+      min-width: 260px;
+    }
+
+    .request-box h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 250px;
+      overflow-y: auto;
+      text-align: left;
+      padding-right: 5px;
+    }
+
+    .report-item {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-item .view-link {
+      color: #007bff;
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">SCHEDULE</a></li>
+      <li><a href="#">CREATE SCHEDULE</a></li>
+      <li><a href="#">REQUESTS</a></li>
+      <li><a href="#">MESSAGES</a></li>
+      <li><a href="#" class="active">REPORTS</a></li>
+    </ul>
+  </nav>
+
+  <div class="requests-container">
+
+    <!-- Past Schedules Box -->
+    <div class="request-box">
+      <h3>Past Schedules</h3>
+      <div class="report-list">
+        <div class="report-item">
+          March 2025 - Full Schedule Report <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          February 2025 - Full Schedule Report <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          January 2025 - Full Schedule Report <span class="view-link">View</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work Hour Logs Box -->
+    <div class="request-box">
+      <h3>Work Hour Logs</h3>
+      <div class="report-list">
+        <div class="report-item">
+          March 2025 - Work Hours Summary <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          February 2025 - Work Hours Summary <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          January 2025 - Work Hours Summary <span class="view-link">View</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shift Swaps Box -->
+    <div class="request-box">
+      <h3>Shift Swaps</h3>
+      <div class="report-list">
+        <div class="report-item">
+          March 2025 - 3 Swaps <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          February 2025 - 5 Swaps <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          January 2025 - 2 Swaps <span class="view-link">View</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Off Box -->
+    <div class="request-box">
+      <h3>Time Off</h3>
+      <div class="report-list">
+        <div class="report-item">
+          March 2025 - 4 Requests <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          February 2025 - 6 Requests <span class="view-link">View</span>
+        </div>
+        <div class="report-item">
+          January 2025 - 3 Requests <span class="view-link">View</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
