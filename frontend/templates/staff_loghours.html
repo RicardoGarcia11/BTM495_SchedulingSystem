@@ -164,11 +164,7 @@
     <div class="log-box">
       <h2>My Shift</h2>
       <div class="shift-info">
-        {% if shift %}
-          <h3>{{ shift.start_time.strftime('%I:%M %p') }} – {{ shift.end_time.strftime('%I:%M %p') }}</h3>
-        {% else %}
-          <h3>No shift assigned for today</h3>
-        {% endif %}
+        <h3>11:00 AM – 5:00 PM</h3>
         <p id="currentDate"></p>
         <p>Service Staff</p>
       </div>
@@ -231,10 +227,8 @@
           } else if (action === 'clock_out') {
             clockedIn = false;
             sessionStorage.setItem("clockedIn", "false");
-
             clockInBtn.disabled = true;
             clockOutBtn.disabled = true;
-
             setTimeout(() => {
               window.location.href = "/staff_dashboard";
             }, 2000);

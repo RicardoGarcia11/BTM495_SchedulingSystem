@@ -113,6 +113,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const calendarCells = document.querySelectorAll('.calendar-cell');
       const swapPanel = document.querySelector('.swap-panel');
+      const employeeList = document.querySelector('.employee-list');
 
       calendarCells.forEach(cell => {
         if (cell.textContent.trim() !== '') {
@@ -120,35 +121,37 @@
             calendarCells.forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
             swapPanel.classList.add('visible');
+
+            // Clear previous employee list
+            employeeList.innerHTML = '';
+
+            // Add Employee 1–4
+            for (let i = 1; i <= 4; i++) {
+              const userDiv = document.createElement('div');
+              userDiv.className = 'swap-user';
+
+              const nameSpan = document.createElement('div');
+              nameSpan.className = 'user-name';
+              nameSpan.textContent = `Employee ${i}`;
+
+              const button = document.createElement('button');
+              button.className = 'request-button';
+              button.textContent = 'Request Swap';
+              button.onclick = function () {
+                button.classList.remove('request-button');
+                button.classList.add('requested-button');
+                button.textContent = 'Requested';
+                button.disabled = true;
+              };
+
+              userDiv.appendChild(nameSpan);
+              userDiv.appendChild(button);
+              employeeList.appendChild(userDiv);
+            }
           });
         }
       });
     });
-
-    function sendSwapRequest(requestedShiftId, targetShiftId, button) {
-      fetch('/staff_shiftswap', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requested_shift_id: requestedShiftId,
-          target_shift_id: targetShiftId
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message || "Swap request submitted.");
-        if (button) {
-          button.classList.remove('request-button');
-          button.classList.add('requested-button');
-          button.textContent = "Requested";
-          button.disabled = true;
-        }
-      })
-      .catch(error => {
-        alert("Error submitting request.");
-        console.error(error);
-      });
-    }
   </script>
 </head>
 
@@ -184,7 +187,7 @@
         {% for i in range(2) %}
         <div class="calendar-cell"></div>
         {% endfor %}
-        {% for day in range(1, 32) %}
+        {% for day in range(1, 31 + 1) %}
         <div class="calendar-cell">{{ day }}</div>
         {% endfor %}
       </div>
@@ -192,16 +195,7 @@
 
     <div class="swap-panel">
       <div class="swap-title">Available to Swap:</div>
-      {% if my_shift_id %}
-        {% for user in other_users %}
-          <div class="swap-user">
-            <div class="user-name">{{ user.name }}</div>
-            <button class="request-button" onclick="sendSwapRequest('{{ my_shift_id }}', '{{ user.shift_id }}', this)">Request Swap</button>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>You have no shift today to swap.</p>
-      {% endif %}
+      <div class="employee-list"></div>
     </div>
   </div>
 
