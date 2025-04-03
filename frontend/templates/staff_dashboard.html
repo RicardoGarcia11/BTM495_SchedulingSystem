@@ -11,10 +11,12 @@
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: 'Inter', sans-serif;
       background-color: #ffffff;
     }
+
     nav {
       background-color: #8e44ec;
       display: flex;
@@ -22,81 +24,81 @@
       align-items: center;
       height: 60px;
       padding: 0 20px;
-      position: relative;
     }
+
     nav ul {
       list-style: none;
       display: flex;
       gap: 20px;
     }
-    nav ul li {
-      position: relative;
-    }
+
     nav ul li a {
-      display: block;
       color: white;
       text-decoration: none;
       font-size: 16px;
       font-weight: bold;
       padding: 14px 16px;
-      transition: background-color 0.3s ease;
       border-radius: 4px;
+      transition: background-color 0.3s ease;
     }
-    nav ul li a:hover {
-      background-color: #5a005a;
-    }
+
+    nav ul li a:hover,
     nav ul li a.active {
       background-color: #5a005a;
     }
+
     .dropdown {
       position: relative;
-      display: inline-block;
     }
+
     .dropdown-toggle {
       color: white;
       font-size: 16px;
       font-weight: bold;
       padding: 14px 16px;
       cursor: pointer;
-      user-select: none;
     }
+
     .dropdown-menu {
       display: none;
       position: absolute;
       right: 0;
       background-color: #8e44ec;
       min-width: 140px;
-      z-index: 1;
       border-radius: 4px;
       overflow: hidden;
+      z-index: 1;
     }
+
     .dropdown-menu a {
       display: block;
       color: white;
-      text-decoration: none;
       padding: 12px 16px;
       font-weight: bold;
-      transition: background-color 0.3s ease;
+      text-decoration: none;
     }
+
     .dropdown-menu a:hover {
       background-color: #5a005a;
     }
+
     .dropdown:hover .dropdown-menu {
       display: block;
     }
+
     .calendar-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 40px 20px;
-      margin-top: 40px;
     }
+
     .calendar-title {
       font-size: 28px;
       font-weight: bold;
       margin-bottom: 20px;
     }
+
     .calendar-days,
     .calendar-dates {
       display: grid;
@@ -106,11 +108,13 @@
       max-width: 600px;
       text-align: center;
     }
+
     .calendar-days div {
       font-weight: bold;
       font-size: 16px;
       padding: 10px 0;
     }
+
     .calendar-cell {
       background-color: white;
       padding: 15px 0;
@@ -119,6 +123,7 @@
       transition: background-color 0.3s ease, transform 0.2s ease;
       font-size: 16px;
     }
+
     .calendar-cell:hover {
       background-color: #8e44ec;
       color: white;
@@ -129,30 +134,25 @@
 <body>
   <nav>
     <ul>
-        <li><a href="{{ url_for('staff_dashboard') }}" class="active">SCHEDULE</a></li>
-        <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
-        <li><a href="#">CREATE AVAILABILITY</a></li>
-        <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
-        <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
-        <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+      <li><a href="{{ url_for('staff_dashboard') }}" class="active">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_availability') }}">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
-        <div class="dropdown-toggle">Staff</div>
-        <div class="dropdown-menu">
-            <a href="{{ url_for('logout') }}">LOG OUT</a>
-        </div>
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
     </div>
-</nav>
+  </nav>
+
   <div class="calendar-container">
     <div class="calendar-title">January 2025</div>
     <div class="calendar-days">
-      <div>Mon</div>
-      <div>Tue</div>
-      <div>Wed</div>
-      <div>Thu</div>
-      <div>Fri</div>
-      <div>Sat</div>
-      <div>Sun</div>
+      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
     </div>
     <div class="calendar-dates">
       <div class="calendar-cell"></div>

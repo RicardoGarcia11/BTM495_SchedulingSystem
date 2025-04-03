@@ -325,6 +325,29 @@ def staff_messages():
 
     return render_template("staff_messages.html")
 
+@app.route("/staff_createavailability", methods=["GET", "POST"])
+def staff_availability():
+    if "logged_in" not in session or session.get("user_type") != "Service_Staff":
+        flash("You must be logged in as Service Staff to access this page.", "warning")
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "No data received."}), 400
+            print("Received availability data:", data)
+
+            return jsonify({"message": "Availability submitted successfully!"}), 200
+
+        except Exception as e:
+            print("Error handling POST request:", e)
+            return jsonify({"error": "Something went wrong."}), 500
+    return render_template("staff_createavailability.html")
+
+
+
+
 
 def start_app():
     app.run(debug=True)

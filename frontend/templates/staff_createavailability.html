@@ -193,7 +193,6 @@
     .add-button.added {
       background-color: #6200ea;
       color: white;
-      cursor: pointer;
     }
 
     .add-button.disabled {
@@ -241,7 +240,77 @@
     .submit-button:hover {
       background-color: #2e86c1;
     }
+
+    .back-button {
+      margin-top: 30px;
+      background-color: #5a005a;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+      display: inline-block;
+    }
+
+    .back-button:hover {
+      background-color: #3a003a;
+    }
   </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_availability') }}" class="active">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="calendar-wrapper">
+      <div class="calendar-container">
+        <div class="calendar-label">Select Day:</div>
+        <div class="calendar-title">Week of Mar 31 – Apr 6, 2025</div>
+        <div class="calendar-days">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div class="calendar-dates">
+          <div class="calendar-cell">31</div>
+          <div class="calendar-cell">1</div>
+          <div class="calendar-cell">2</div>
+          <div class="calendar-cell">3</div>
+          <div class="calendar-cell">4</div>
+          <div class="calendar-cell">5</div>
+          <div class="calendar-cell">6</div>
+        </div>
+      </div>
+
+      <div class="swap-panel">
+        <div class="calendar-label">Select Hours:</div>
+        <div class="swap-title">Shifts</div>
+        <div id="shift-list"></div>
+      </div>
+    </div>
+
+    <div class="summary-box" id="summary-box">
+      <h3>Selected Availability</h3>
+    </div>
+
+    <button class="submit-button">Submit</button>
+    <a href="{{ url_for('staff_dashboard') }}" class="back-button">← Back to Dashboard</a>
+  </div>
+
   <script>
     const shifts = [
       { time: '11:00 AM - 5:00 PM', label: 'Afternoon' },
@@ -360,58 +429,30 @@
           });
         }
       });
+
+      
+      document.querySelector('.submit-button').addEventListener('click', () => {
+        fetch("/staff_createavailability", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(selectedShiftsByDay)
+        })
+        .then(response => {
+          if (!response.ok) throw new Error("Network response was not ok.");
+          return response.json();
+        })
+        .then(data => {
+          alert(data.message || "Availability submitted!");
+         
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Failed to submit availability.");
+        });
+      });
     });
   </script>
-</head>
-<body>
-  <nav>
-    <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">SHIFT SWAP</a></li>
-      <li><a href="#" class="active">CREATE AVAILABILITY</a></li>
-      <li><a href="#">TIME OFF</a></li>
-      <li><a href="#">MESSAGES</a></li>
-      <li><a href="#">LOG HOURS</a></li>
-    </ul>
-    <div class="dropdown">
-      <div class="dropdown-toggle">Staff</div>
-      <div class="dropdown-menu">
-        <a href="{{ url_for('logout') }}">LOG OUT</a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="main-content">
-    <div class="calendar-wrapper">
-      <div class="calendar-container">
-        <div class="calendar-label">Select Day:</div>
-        <div class="calendar-title">Week of Mar 31 – Apr 6, 2025</div>
-        <div class="calendar-days">
-          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-        </div>
-        <div class="calendar-dates">
-          <div class="calendar-cell">31</div>
-          <div class="calendar-cell">1</div>
-          <div class="calendar-cell">2</div>
-          <div class="calendar-cell">3</div>
-          <div class="calendar-cell">4</div>
-          <div class="calendar-cell">5</div>
-          <div class="calendar-cell">6</div>
-        </div>
-      </div>
-
-      <div class="swap-panel">
-        <div class="calendar-label">Select Hours:</div>
-        <div class="swap-title">Shifts</div>
-        <div id="shift-list"></div>
-      </div>
-    </div>
-
-    <div class="summary-box" id="summary-box">
-      <h3>Selected Availability</h3>
-    </div>
-
-    <button class="submit-button">Submit</button>
-  </div>
 </body>
 </html>
