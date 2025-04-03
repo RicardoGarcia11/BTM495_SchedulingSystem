@@ -263,7 +263,35 @@ def staff_shiftswap():
         other_users=other_users
     )
 
+@app.route("/staff_timeoff", methods=["GET", "POST"])
+def staff_timeoff():
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
+        return redirect(url_for('login'))
 
+    employee_id = session.get("user_id")
+    user = User.query.get(employee_id)
+
+    if request.method == "POST":
+        try:
+            start_date = request.form.get("start_date")
+            end_date = request.form.get("end_date")
+            full_day = request.form.get("full_day")
+            total_leave_hours = 8 if full_day else 4
+
+            time_off = TimeOff.createTimeOff(
+                start_leave_date=start_date,
+                end_leave_date=end_date,
+                total_leave_hours=total_leave_hours,
+                employee_id=employee_id
+            )
+            db.session.commit()
+            return redirect(url_for("staff_dashboard"))
+
+        except Exception as e:
+            print("Time off error:", str(e))
+            return render_template("staff_timeoff.html", user=user, error="Submission failed.")
+
+    return render_template("staff_timeoff.html", user=user)
 
 
 def start_app():
