@@ -11,7 +11,8 @@ from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Mess
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) #added '..' to point to the base directory
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True) # Ensure 'instance' folder always exists when the app runs
 db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -261,6 +262,7 @@ def staff_shiftswap():
         my_shift_id=my_shift.shift_id if my_shift else None,
         other_users=other_users
     )
+
 
 
 
