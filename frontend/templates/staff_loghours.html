@@ -72,14 +72,16 @@
     .dropdown:hover .dropdown-menu {
       display: block;
     }
+
     .log-hours-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: calc(100vh - 60px);
+      min-height: calc(100vh - 60px);
       padding: 20px;
     }
+
     .log-box {
       background-color: #ffffff;
       border-radius: 12px;
@@ -87,41 +89,47 @@
       padding: 40px 60px;
       max-width: 640px;
       width: 100%;
+      text-align: center;
     }
+
     .log-box h2 {
       font-size: 36px;
       font-weight: 700;
       margin-bottom: 30px;
-      text-align: center;
     }
+
     .shift-info {
       background-color: #dff4ff;
       border-radius: 10px;
       padding: 30px;
       margin-bottom: 30px;
     }
+
     .shift-info h3 {
       font-size: 32px;
       font-weight: 800;
       color: #000;
     }
+
     .shift-info p {
       margin-top: 10px;
       font-size: 20px;
       color: #333;
     }
+
     .time-display {
-      text-align: center;
       font-size: 28px;
       font-weight: 700;
       margin-bottom: 30px;
       color: #112378;
     }
+
     .buttons {
       display: flex;
       gap: 20px;
       justify-content: center;
     }
+
     .buttons button {
       font-size: 18px;
       font-weight: bold;
@@ -133,24 +141,48 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
+
     .buttons button:hover {
       opacity: 0.9;
     }
+
     .buttons button.active {
       background-color: white;
       color: #007AFF;
+    }
+
+    #lastLogTime {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #112378;
+    }
+
+    .back-btn {
+      display: block;
+      margin-top: 40px;
+      padding: 12px 20px;
+      background-color: #8e44ec;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #5a005a;
     }
   </style>
 </head>
 <body>
   <nav>
     <ul>
-      <li><a href="#">SCHEDULE</a></li>
-      <li><a href="#">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
       <li><a href="#">CREATE AVAILABILITY</a></li>
-      <li><a href="#">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
       <li><a href="#">MESSAGES</a></li>
-      <li><a href="#" class="active">LOG HOURS</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}" class="active">LOG HOURS</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Staff</div>
@@ -173,8 +205,10 @@
         <button id="clockInBtn" class="clock-btn">Clock In</button>
         <button id="clockOutBtn" class="clock-btn">Clock Out</button>
       </div>
-      <div id="lastLogTime" style="margin-top: 20px; font-size: 18px; color: #112378; text-align: center;"></div>
+      <div id="lastLogTime"></div>
     </div>
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-btn">← Back to Dashboard</a>
   </div>
 
   <script>
@@ -211,10 +245,7 @@
         .then(data => {
           const message = data.message || data.error || "Action completed.";
           alert(message);
-
-          if (lastLogEl) {
-            lastLogEl.textContent = message;
-          }
+          lastLogEl.textContent = message;
 
           if (data.error) {
             setTimeout(() => window.location.href = "/staff_dashboard", 100);

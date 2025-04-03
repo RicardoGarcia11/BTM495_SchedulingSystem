@@ -132,6 +132,19 @@
       background-color: #8e44ec;
       color: white;
     }
+    .back-btn {
+      display: inline-block;
+      margin-top: 25px;
+      background-color: #8e44ec;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .back-btn:hover {
+      background-color: #5a005a;
+    }
   </style>
 </head>
 <body>
@@ -208,6 +221,8 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-btn">← Back to Dashboard</a>
   </div>
 </body>
 </html>
