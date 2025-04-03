@@ -342,7 +342,7 @@ def staff_messages():
     return render_template("staff_messages.html")
 
 @app.route("/staff_createavailability", methods=["GET", "POST"])
-def staff_availability():
+def staff_createavailability():
     if "logged_in" not in session or session.get("user_type") != "Service_Staff":
         flash("You must be logged in as Service Staff to access this page.", "warning")
         return redirect(url_for("login"))
