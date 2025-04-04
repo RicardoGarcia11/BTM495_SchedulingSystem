@@ -8,18 +8,16 @@ import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord
+from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability
 
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
 
-basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # go up one level to project root
-os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)  # make sure instance folder exists
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) 
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True) 
 db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Set upload folder for file uploads
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -443,25 +441,57 @@ def staff_createavailability():
         flash("You must be logged in as Service Staff to access this page.", "warning")
         return redirect(url_for("login"))
 
+    employee_id = session.get("user_id")
+
     if request.method == "POST":
         try:
             data = request.get_json()
             if not data:
                 return jsonify({"error": "No data received."}), 400
-            print("Received availability data:", data)
 
+            print("Received staff_createavailability data:", data)
+
+           
+            for day_index, details in data.items():
+                for shift in details["shifts"]:
+                    availability = Availability(
+                        employee_id=employee_id,
+                        day_index=int(day_index),
+                        shift_type=shift  
+                    )
+                    db.session.add(availability)
+
+            db.session.commit()
             return jsonify({"message": "Availability submitted successfully!"}), 200
 
         except Exception as e:
             print("Error handling POST request:", e)
+            db.session.rollback()
             return jsonify({"error": "Something went wrong."}), 500
+
     return render_template("staff_createavailability.html")
+
 
 @app.route("/manager_report_detail")
 def manager_report_detail():
     section = request.args.get("section", "Unknown Section")
     label = request.args.get("label", "Unknown Report")
     return render_template("manager_report_detail.html", section=section, label=label)
+
+@app.route("/manager_viewstaffavailability")
+def manager_viewstaffavailability():
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for("login"))
+
+    availability_records = db.session.query(
+        Availability.employee_id,
+        User.employee_name,
+        Availability.day_index,
+        Availability.shift_type
+    ).join(User, Availability.employee_id == User.employee_id).order_by(Availability.employee_id, Availability.day_index).all()
+
+    return render_template("manager_viewstaffavailability.html", records=availability_records)
+
 
 
 def start_app():
