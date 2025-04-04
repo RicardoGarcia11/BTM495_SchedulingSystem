@@ -67,6 +67,15 @@ class Account(db.Model):
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), unique=True)
     manager_code = db.Column(db.Integer)
 
+    def set_password(self, plain_text_password):
+        from werkzeug.security import generate_password_hash
+    
+        self.password = generate_password_hash(plain_text_password, method='pbkdf2:sha256')
+
+    def check_password(self, attempted_password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password, attempted_password)
+
     @property
     def user_type(self):
         user = User.query.get(self.employee_id)
@@ -75,12 +84,12 @@ class Account(db.Model):
     def getID(self):
         return self.employee_id
 
-    def verifyLogin(self, password):
-        return self.password == password
 
     def verifyUserType(self):
         user = User.query.get(self.employee_id)
         return user.user_type if user else None
+
+
 
 class Manager(db.Model):
     __tablename__ = 'manager'

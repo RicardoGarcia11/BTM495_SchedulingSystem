@@ -18,6 +18,10 @@ db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# Set upload folder for file uploads
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 db.init_app(app)
 
 with app.app_context():
@@ -29,23 +33,92 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
+
         account = Account.query.filter_by(email=email).first()
 
-        if account and check_password_hash(account.password, password):
+    
+        if account and account.check_password(password):
             user = User.query.get(account.employee_id)
+
+        
             session['logged_in'] = True
             session['user_type'] = user.user_type
             session['user_id'] = user.employee_id
             session['user_name'] = user.employee_name
 
+        
             if user.user_type == "Manager":
                 return redirect(url_for("manager_dashboard"))
             else:
                 return redirect(url_for("staff_dashboard"))
 
-        return render_template("login_page.html", error="Invalid email or password.")
     
+        return render_template("login_page.html", error="Invalid email or password.")
+
     return render_template("login_page.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        employee_name = request.form["employee_name"].strip()
+        email = request.form["email"].strip().lower()
+        password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+        user_type = request.form["user_type"]
+
+        # 1. Check password match
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.", "danger")
+            return redirect(url_for("signup"))
+
+        # 2. Check if account already exists
+        existing_account = Account.query.filter_by(email=email).first()
+        if existing_account:
+            flash("Email already registered. Please use a different email.", "danger")
+            return redirect(url_for("signup"))
+
+        try:
+            
+            new_user = User(employee_name=employee_name, user_type=user_type)
+            db.session.add(new_user)
+            db.session.flush() 
+           
+
+
+            new_account = Account(email=email, employee_id=new_user.employee_id)
+            new_account.set_password(password)
+            db.session.add(new_account)
+
+            print(f"Creating account for: {email}, {employee_name}, type: {user_type}")
+            db.session.commit()
+            print(" Registration saved to database.")
+
+
+            session['logged_in'] = True
+            session['user_type'] = user_type
+            session['user_id'] = new_user.employee_id
+            session['user_name'] = new_user.employee_name
+
+            flash(f"Welcome, {new_user.employee_name}! Your account was created successfully.", "success")
+
+            # 7. Redirect to proper dashboard
+            if user_type == "Manager":
+                return redirect(url_for("manager_dashboard"))
+            else:
+                return redirect(url_for("staff_dashboard"))
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error during registration: {str(e)}")
+            flash("An error occurred while creating your account. Please try again.", "danger")
+            return redirect(url_for("signup"))
+
+    return redirect(url_for("signup"))
+
+
+
+
 
 @app.route("/create_shift", methods=["POST"])
 def create_shift():
@@ -374,5 +447,3 @@ def start_app():
 
 if __name__ == "__main__":
     start_app()
-
-
