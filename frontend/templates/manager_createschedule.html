@@ -6,9 +6,144 @@
   <title>Manager Dashboard - Create Schedule</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/managercreateschedule.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    
+    .available-btn {
+      background-color: #d2b4f2;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .assigned-cell {
+      text-align: center;
+      background-color: #a9dfbf;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    .undo-btn {
+      margin-top: 4px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .flash {
+      padding: 10px;
+      margin: 20px auto;
+      width: 60%;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .flash.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .back-btn {
+  display: block;
+  text-align: center;
+  margin: 20px auto 0;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: #eeeeee;
+  color: #333;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 2px solid #8e44ec;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #8e44ec;
+  color: white;
+}
   </style>
+
+  <script>
+    setTimeout(() => {
+      const flash = document.getElementById("flash-message");
+      if (flash) flash.style.display = "none";
+    }, 3000);
+  </script>
+
+  {% if success_redirect %}
+  <script>
+    setTimeout(() => {
+      window.location.href = "{{ url_for('manager_dashboard') }}";
+    }, 3000);
+  </script>
+  {% endif %}
+</head>
+<body>
+
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="flash-message">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}" class="active">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="/logout">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="schedule-container">
+    <h2>Create Weekly Schedule</h2>
+
+    <form method="POST" id="schedule-form">
+      <input type="hidden" name="schedule_data" id="schedule-data">
+
+      <table class="schedule-table">
+        <thead>
+          <tr id="days-row"></tr>
+        </thead>
+        <tbody>
+          {% for staff in staff_list %}
+          <tr>
+            <td class="employee-name">{{ staff.employee_name }}</td>
+            {% for day in range(7) %}
+            <td data-employee="{{ staff.employee_id }}" data-day="{{ day }}">
+              <button type="button" class="available-btn" onclick="assignCell(this)">Available</button>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button class="submit-btn" type="submit">Submit Schedule</button>
+      <a href="{{ url_for('manager_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+    </form>
+  </div>
+
   <script>
     function getWeekDates() {
       const today = new Date();
@@ -24,20 +159,35 @@
       return weekDates;
     }
 
-    function assignCell(td) {
-      const originalContent = td.innerHTML;
-      td.innerHTML = '<div class="assigned-cell">Assigned<br><button class="undo-btn">Undo</button></div>';
+    function assignCell(button) {
+      const td = button.parentElement;
+      const employeeId = td.getAttribute("data-employee");
+      const day = td.getAttribute("data-day");
+
+      td.innerHTML = `
+        <div class="assigned-cell" data-assigned="true">
+          Assigned<br>
+          <button type="button" class="undo-btn">Undo</button>
+        </div>
+      `;
+      td.setAttribute("data-employee", employeeId);
+      td.setAttribute("data-day", day);
+
       const undoButton = td.querySelector('.undo-btn');
       undoButton.onclick = () => {
-        td.innerHTML = originalContent;
-        const button = td.querySelector('button');
-        button.onclick = () => assignCell(td);
+        td.innerHTML = `
+          <button type="button" class="available-btn"
+                  onclick="assignCell(this)">
+            Available
+          </button>
+        `;
+        td.setAttribute("data-employee", employeeId);
+        td.setAttribute("data-day", day);
       };
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       const daysRow = document.getElementById('days-row');
-      const body = document.querySelector('tbody');
       const weekDates = getWeekDates();
 
       const emptyTh = document.createElement('th');
@@ -50,98 +200,27 @@
         daysRow.appendChild(th);
       });
 
-      const employees = 6;
-      const columns = 7;
-      const availableMatrix = Array.from({ length: employees }, () => Array(columns).fill(false));
-
-      for (let col = 0; col < columns; col++) {
-        const chosen = new Set();
-        while (chosen.size < 3) {
-          const randRow = Math.floor(Math.random() * employees);
-          if (!availableMatrix[randRow][col]) {
-            availableMatrix[randRow][col] = true;
-            chosen.add(randRow);
-          }
-        }
-      }
-
-      for (let i = 0; i < employees; i++) {
-        const tr = document.createElement('tr');
-        const nameTd = document.createElement('td');
-        nameTd.className = 'employee-name';
-        nameTd.textContent = `Employee ${i + 1}`;
-        tr.appendChild(nameTd);
-
-        for (let j = 0; j < columns; j++) {
-          const td = document.createElement('td');
-          if (availableMatrix[i][j]) {
-            const btn = document.createElement('button');
-            btn.className = 'available-btn';
-            btn.textContent = 'Available';
-            btn.onclick = () => assignCell(td);
-            td.appendChild(btn);
-          } else {
-            td.textContent = "Not Available";
-          }
-          tr.appendChild(td);
-        }
-        body.appendChild(tr);
-      }
-
       const submitBtn = document.querySelector('.submit-btn');
-      submitBtn.addEventListener('click', () => {
-        
-        const assignedCells = document.querySelectorAll('.assigned-cell');
-        assignedCells.forEach(cell => {
-          const td = cell.parentElement;
-          td.innerHTML = '<div class="assigned-cell">Assigned</div>';
+      submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const assigned = [];
+        const cells = document.querySelectorAll('td[data-employee][data-day]');
+
+        cells.forEach(td => {
+          const assignedCell = td.querySelector('.assigned-cell');
+          if (assignedCell && assignedCell.dataset.assigned === "true") {
+            assigned.push({
+              employee_id: td.getAttribute("data-employee"),
+              day_index: td.getAttribute("data-day")
+            });
+          }
         });
 
-        
-        const availableButtons = document.querySelectorAll('.available-btn');
-        availableButtons.forEach(btn => {
-          btn.disabled = true;
-          btn.style.cursor = 'not-allowed';
-          btn.style.opacity = '0.6';
-        });
-
-        
-        if (!document.querySelector('.confirmation-message')) {
-          const confirmation = document.createElement('div');
-          confirmation.className = 'confirmation-message';
-          confirmation.textContent = 'Schedule successfully submitted!';
-          document.querySelector('.schedule-container').appendChild(confirmation);
-        }
+        document.getElementById('schedule-data').value = JSON.stringify(assigned);
+        document.getElementById('schedule-form').submit();
       });
     });
   </script>
-</head>
-<body>
-  <nav>
-    <ul>
-      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_createschedule') }}" class="active">CREATE SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_requests') }}" >REQUESTS</a></li>
-      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
-    </ul>
-    <div class="dropdown">
-      <div class="dropdown-toggle">Manager</div>
-      <div class="dropdown-menu">
-        <a href="/logout">LOG OUT</a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="schedule-container">
-    <h2>Create Weekly Schedule</h2>
-    <table class="schedule-table">
-      <thead>
-        <tr id="days-row"></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button class="submit-btn">Submit Schedule</button>
-  </div>
 </body>
 </html>

@@ -1,9 +1,10 @@
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, time
 from flask import Flask, request, redirect, url_for, render_template, jsonify, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -67,12 +68,12 @@ def register():
         confirm_password = request.form["confirm_password"]
         user_type = request.form["user_type"]
 
-        # 1. Check password match
+        
         if password != confirm_password:
             flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for("signup"))
 
-        # 2. Check if account already exists
+        
         existing_account = Account.query.filter_by(email=email).first()
         if existing_account:
             flash("Email already registered. Please use a different email.", "danger")
@@ -102,7 +103,7 @@ def register():
 
             flash(f"Welcome, {new_user.employee_name}! Your account was created successfully.", "success")
 
-            # 7. Redirect to proper dashboard
+            
             if user_type == "Manager":
                 return redirect(url_for("manager_dashboard"))
             else:
@@ -205,35 +206,56 @@ def manager_dashboard():
 def manager_createschedule():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         if request.method == "POST":
-            print(" FORM SUBMITTED")
+            import json
 
-            start_date = datetime.strptime(request.form["start_date"], "%Y-%m-%d").date()
-            end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date()
-            shift_ids = request.form.getlist("shifts")
-            total_hours = 0
-            for shift_id in shift_ids:
-                shift = Shift.query.get(int(shift_id))
-                if shift:
-                    total_hours += float(shift.total_hours)
+            schedule_data = json.loads(request.form["schedule_data"])
+            print("Schedule Submitted:", schedule_data)
 
-            print(f"Start: {start_date}, End: {end_date}, Total Hours: {total_hours}, Shifts: {shift_ids}")
+            start_date = datetime.today().date()
+            day_map = [start_date + timedelta(days=i) for i in range(7)]
 
-            
-            schedule = Schedule.createSchedule(start_date, end_date, total_hours, session['user_id'])
+            total_hours = len(schedule_data) * 8  
+            schedule = Schedule.createSchedule(
+                start_date=start_date,
+                end_date=start_date + timedelta(days=6),
+                total_hours=total_hours,
+                manager_id=session['user_id']
+            )
+            db.session.add(schedule)
 
-            for shift_id in shift_ids:
-                shift = Shift.query.get(int(shift_id))
-                if shift:
-                    schedule.shifts.append(shift)
+            for item in schedule_data:
+                emp_id = int(item["employee_id"])
+                shift_date = day_map[int(item["day_index"])]
+
+                shift = Shift(
+                    employee_id=emp_id,
+                    shift_date=shift_date,
+                    start_time=time(9, 0),
+                    end_time=time(17, 0),
+                    total_hours=8
+                )
+
+                db.session.add(shift)
+                schedule.shifts.append(shift)
 
             db.session.commit()
-            return redirect(url_for("manager_dashboard"))
 
         
-        shifts = Shift.query.filter(Shift.shift_date >= datetime.today().date()).all()
-        return render_template("manager_createschedule.html", shifts=shifts)
+            return redirect(url_for("manager_createschedule", success="1"))
+
+    
+        staff_list = User.query.filter_by(user_type="Service_Staff").order_by(User.employee_id).all()
+
+        
+        if request.args.get("success") == "1":
+            flash("Weekly schedule created successfully!", "success")
+            return render_template("manager_createschedule.html", staff_list=staff_list, success_redirect=True)
+
+        return render_template("manager_createschedule.html", staff_list=staff_list)
 
     return redirect(url_for("manager_login"))
+
+
 
 @app.route("/manager_messages", methods=["GET"])
 def manager_messages():

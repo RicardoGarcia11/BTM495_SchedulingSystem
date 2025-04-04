@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up Page</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -65,7 +65,7 @@
       width: 100%;
     }
 
-    input {
+    input, select {
       width: 85%;
       padding: 12px;
       border: 1px solid #ccc;
@@ -128,6 +128,7 @@
           <label for="employee_name">Full Name</label>
           <input type="text" id="employee_name" name="employee_name" placeholder="Enter your full name" required />
         </div>
+
         <div class="form-group">
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="Enter your email" required />
@@ -140,20 +141,25 @@
           <label for="confirm_password">Re-enter Password</label>
           <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required />
         </div>
+        <div class="form-group">
+          <label for="user_type">User Type</label>
+          <select id="user_type" name="user_type" required>
+            <option value="">-- Select User Type --</option>
+            <option value="Service_Staff">Service Staff</option>
+            <option value="Manager">Manager</option>
+          </select>
+        </div>
         <div class="error" id="error-message"></div>
-        <input type="hidden" name="user_type" value="Service_Staff" />
         <button type="submit">Create Account</button>
       </form>
       <a href="{{ url_for('home') }}" class="home-button">← Back to Home</a>
     </div>
   </div>
-
   <script>
     const form = document.getElementById('signupForm');
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirm_password');
     const errorMessage = document.getElementById('error-message');
-
     form.addEventListener('submit', function (e) {
       if (password.value !== confirmPassword.value) {
         e.preventDefault();
