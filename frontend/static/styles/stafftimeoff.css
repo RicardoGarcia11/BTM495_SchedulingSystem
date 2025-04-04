@@ -1,0 +1,139 @@
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+}
+nav {
+  background-color: #8e44ec;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding: 0 20px;
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+nav ul li a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 14px 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+nav ul li a:hover,
+nav ul li a.active {
+  background-color: #5a005a;
+}
+.dropdown {
+  position: relative;
+}
+.dropdown-toggle {
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #8e44ec;
+  min-width: 140px;
+  z-index: 1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dropdown-menu a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 12px 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+.dropdown-menu a:hover {
+  background-color: #5a005a;
+}
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+.time-off-form {
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+.time-off-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.time-off-form input,
+.time-off-form select,
+.time-off-form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.time-off-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.time-off-form button:hover {
+  background-color: #005ecf;
+}
+.confirmation {
+  color: green;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.requests-table th, .requests-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+.requests-table th {
+  background-color: #8e44ec;
+  color: white;
+}
+.back-btn {
+  display: inline-block;
+  margin-top: 25px;
+  background-color: #8e44ec;
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+.back-btn:hover {
+  background-color: #5a005a;
+}

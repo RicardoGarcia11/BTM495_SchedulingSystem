@@ -1,66 +1,87 @@
 body {
   margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #ffffff;
+  font-family: 'Inter', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: white;
 }
 
-.login-container {
-  width: 423px;
-  height: 486px;
-  margin: 50px auto;
-  position: relative;
-  background: white;
-  padding: 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  border-radius: 10px;
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.login-title {
+.title {
   font-size: 20px;
-  font-weight: 700;
-  color: black;
-  margin-bottom: 40px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
   text-align: center;
 }
 
-.input-label {
-  display: block;
-  font-size: 18px;
-  font-weight: 400;
-  color: black;
-  margin-bottom: 5px;
-}
-
-.input-field {
-  width: 100%;
-  height: 43px;
-  margin-bottom: 25px;
-  padding: 10px;
-  border: 1px solid #9f9f9f;
-  border-radius: 5px;
-  font-size: 16px;
+.square {
+  width: 300px;
+  padding: 20px;
+  border: 4px solid #8e44ec;
+  background-color: transparent;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.forgot-password {
-  font-size: 10px;
-  color: black;
-  text-align: right;
-  margin-bottom: 20px;
-  cursor: pointer;
-}
-
-.login-button {
+form {
   width: 100%;
-  height: 45px;
-  background-color: #007AFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+  align-self: flex-start;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button, .home-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #8e44ec;
   color: white;
-  font-size: 20px;
-  font-weight: 700;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 10px;
+}
+
+button:hover, .home-button:hover {
+  background-color: #6c2cb3;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 15px;
 }
