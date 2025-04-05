@@ -273,24 +273,40 @@ def manager_requests():
     if 'logged_in' not in session or session.get('user_type') != 'Manager':
         return redirect(url_for('login'))
 
-    UserAlias = db.aliased(User)
+    
+    TargetShift = db.aliased(Shift)
+    TargetUser = db.aliased(User)
+
+    
     swap_requests = db.session.query(
         Request.request_id,
         Request.status,
         Request.request_date,
         User.employee_name.label("requester_name"),
-        UserAlias.employee_name.label("swap_with_name")
+        TargetUser.employee_name.label("swap_with_name")
     ).join(User, Request.employee_id == User.employee_id
-    ).outerjoin(UserAlias, Request.swap_with_id == UserAlias.employee_id
-    ).filter(Request.request_type == 'Shift Swap').all()
+    ).outerjoin(TargetShift, Request.target_shift_id == TargetShift.shift_id
+    ).outerjoin(TargetUser, TargetShift.employee_id == TargetUser.employee_id
+    ).filter(
+        Request.request_type == 'Shift Swap',
+        Request.status == 'Pending'
+    ).all()
 
+    
     time_off_requests = db.session.query(
         Request.request_id,
         Request.status,
         Request.request_date,
-        User.employee_name.label("requester_name")
+        User.employee_name.label("requester_name"),
+        TimeOff.start_leave_date,
+        TimeOff.end_leave_date,
+        TimeOff.reason
     ).join(User, Request.employee_id == User.employee_id
-    ).filter(Request.request_type == 'Time Off').all()
+    ).join(TimeOff, Request.time_off_id == TimeOff.time_off_id
+    ).filter(
+        Request.request_type == 'Time Off',
+        Request.status == 'Pending'
+    ).all()
 
     return render_template(
         'manager_requests.html',
@@ -475,16 +491,16 @@ def staff_timeoff():
             start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
-            
             filename = None
             if file and file.filename:
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+            # Create TimeOff entry
             time_off = TimeOff(
                 start_leave_date=start_date,
                 end_leave_date=end_date,
-                total_leave_hours=0, 
+                total_leave_hours=0,
                 employee_id=employee_id,
                 reason=reason,
                 status="Pending",
@@ -493,6 +509,18 @@ def staff_timeoff():
             )
 
             db.session.add(time_off)
+            db.session.flush()  # So we can get time_off.time_off_id
+
+            # Create linked Request entry
+            request_entry = Request(
+                employee_id=employee_id,
+                request_type="Time Off",
+                request_date=datetime.utcnow(),
+                time_off_id=time_off.time_off_id,  # ✅ Link to TimeOff
+                status="Pending"
+            )
+
+            db.session.add(request_entry)
             db.session.commit()
 
             flash("Time off request submitted successfully!", "success")
@@ -500,13 +528,14 @@ def staff_timeoff():
 
         except Exception as e:
             print("Error submitting request:", str(e))
+            db.session.rollback()
             flash("There was a problem submitting your request. Try again.", "danger")
             return redirect(url_for("staff_timeoff"))
 
-    
     previous_requests = TimeOff.query.filter_by(employee_id=employee_id).order_by(TimeOff.start_leave_date.desc()).all()
 
     return render_template("staff_timeoff.html", requests=previous_requests)
+
 
 @app.route("/staff_messages", methods=["GET"])
 def staff_messages():
@@ -632,6 +661,22 @@ def request_swap():
     except Exception as e:
         print("Error processing swap request:", e)
         return jsonify({"message": "Internal server error."}), 500
+    
+@app.route("/update_request_status", methods=["POST"])
+def update_request_status():
+    data = request.get_json()
+    request_id = data.get("request_id")
+    new_status = data.get("status")
+
+    req = Request.query.get(request_id)
+    if not req:
+        return jsonify({"message": "Request not found."}), 404
+
+    req.status = new_status
+    db.session.commit()
+
+    return jsonify({"message": f"Request {request_id} marked as {new_status}."}), 200
+
     
 def start_app():
     app.run(debug=True)

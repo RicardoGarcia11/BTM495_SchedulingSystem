@@ -218,11 +218,13 @@
                 {% if shift.requested %}
                   <button class="requested-button" disabled>Requested</button>
                 {% else %}
-                  <button class="request-button"
-                          data-requested="{{ shift.shift_id }}"
-                          data-target="{{ my_shift_id if my_shift_id is not none else 'null' }}"
-                          onclick="handleSwapClick(this)">
-                    Request Swap
+                <button class="request-button"
+                data-requested="{{ my_shift_id if my_shift_id is not none else 'null' }}"
+                data-target="{{ shift.shift_id }}"
+                onclick="handleSwapClick(this)">
+          Request Swap
+        </button>
+        
                   </button>
                 {% endif %}
               {% endif %}

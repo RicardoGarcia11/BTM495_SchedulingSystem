@@ -274,6 +274,7 @@ class Request(db.Model):
     request_date = db.Column(db.Date, default=datetime.utcnow)
     requested_shift_id = db.Column(db.Integer, db.ForeignKey('shift.shift_id'))  
     target_shift_id = db.Column(db.Integer, db.ForeignKey('shift.shift_id'))
+    time_off_id = db.Column(db.Integer, db.ForeignKey('time_off.time_off_id'))
     status = db.Column(db.String(50), default='Pending') 
 
     def __repr__(self):

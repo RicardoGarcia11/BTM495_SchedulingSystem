@@ -92,9 +92,6 @@
       approveBtn.style.backgroundColor = '#28a745';
 
       denyBtn.disabled = true;
-      denyBtn.style.backgroundColor = '#007bff';
-      denyBtn.innerHTML = 'Deny';
-
       employee.setAttribute('data-status', 'approved');
     }
 
@@ -108,9 +105,6 @@
       denyBtn.style.backgroundColor = '#dc3545';
 
       approveBtn.disabled = true;
-      approveBtn.style.backgroundColor = '#007bff';
-      approveBtn.innerHTML = 'Approve';
-
       employee.setAttribute('data-status', 'denied');
     }
 
@@ -143,8 +137,26 @@
 
       employees.forEach(emp => {
         const status = emp.getAttribute('data-status');
+        const requestId = emp.id.split("_")[1]; // Works for both "request_123" and "timeoff_123"
+
         if (status === 'approved' || status === 'denied') {
-          emp.remove();
+          fetch("/update_request_status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              request_id: requestId,
+              status: status.charAt(0).toUpperCase() + status.slice(1)
+            })
+          }).then(res => res.json())
+            .then(data => {
+              console.log(data.message);
+              emp.remove();
+            }).catch(err => {
+              alert("Error updating request.");
+              console.error(err);
+            });
         }
       });
 
