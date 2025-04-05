@@ -5,6 +5,8 @@ from flask import Flask, request, redirect, url_for, render_template, jsonify, s
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import json
+from calendar import monthrange
+from sqlalchemy.exc import SQLAlchemyError
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -390,7 +392,7 @@ def staff_log_hours():
         print("Logging error:", str(e))
         return jsonify({"error": "Logging hours failed"}), 500
     
-@app.route("/staff_shiftswap", methods=["GET", "POST"])
+@app.route("/staff_shiftswap", methods=["GET"])
 def staff_shiftswap():
     if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
         return redirect(url_for('login'))
@@ -398,28 +400,58 @@ def staff_shiftswap():
     employee_id = session.get("user_id")
     today = datetime.today().date()
 
-    my_shift = Shift.query.filter_by(shift_date=today, employee_id=employee_id).first()
+    selected_month = int(request.args.get("month", today.month))
+    selected_year = int(request.args.get("year", today.year))
 
-    other_shifts = Shift.query.filter(
-        Shift.shift_date == today,
-        Shift.employee_id != employee_id,
-        Shift.employee_id.isnot(None)
+    month_start = datetime(selected_year, selected_month, 1).date()
+    num_days = monthrange(selected_year, selected_month)[1]
+    next_month = (month_start + timedelta(days=num_days)).replace(day=1)
+    first_weekday = month_start.weekday()
+
+    shifts_in_month = Shift.query.filter(
+        Shift.shift_date >= month_start,
+        Shift.shift_date < next_month
     ).all()
 
-    other_users = []
-    for shift in other_shifts:
+    shift_map = {}
+    my_shift_id = None
+
+    for shift in shifts_in_month:
         user = User.query.get(shift.employee_id)
         if user:
-            other_users.append({
+            shift_map[shift.shift_date.day] = {
+                "shift_id": shift.shift_id,
                 "name": user.employee_name,
-                "shift_id": shift.shift_id
-            })
+                "start_time": shift.start_time.strftime("%H:%M"),
+                "end_time": shift.end_time.strftime("%H:%M"),
+                "employee_id": user.employee_id
+            }
+
+        if shift.employee_id == employee_id and my_shift_id is None:
+            my_shift_id = shift.shift_id
+
+    prev_month = selected_month - 1 if selected_month > 1 else 12
+    prev_year = selected_year if selected_month > 1 else selected_year - 1
+    next_month_val = selected_month + 1 if selected_month < 12 else 1
+    next_year = selected_year if selected_month < 12 else selected_year + 1
 
     return render_template(
         "staff_shiftswap.html",
-        my_shift_id=my_shift.shift_id if my_shift else None,
-        other_users=other_users
+        month_name=month_start.strftime("%B"),
+        year=selected_year,
+        today=today.day if today.month == selected_month and today.year == selected_year else -1,
+        num_days=num_days,
+        first_weekday=first_weekday,
+        shift_map=shift_map,
+        current_user_id=employee_id,
+        current_month=(today.month == selected_month and today.year == selected_year),
+        prev_month=prev_month,
+        prev_year=prev_year,
+        next_month=next_month_val,
+        next_year=next_year,
+        my_shift_id=my_shift_id
     )
+
 
 @app.route("/staff_timeoff", methods=["GET", "POST"])
 def staff_timeoff():
@@ -558,6 +590,39 @@ def clear_availability():
         print("Error clearing availability:", e)
         db.session.rollback()
         return jsonify({"error": "Failed to clear availability."}), 500
+    
+@app.route("/request_swap", methods=["POST"])
+def request_swap():
+    data = request.get_json()
+    print("Received data:", data)
+
+    requested_shift_id = data.get("requested_shift_id")
+    target_shift_id = data.get("target_shift_id")
+    employee_id = session.get("user_id")
+
+    if requested_shift_id is None or target_shift_id is None or employee_id is None:
+        return jsonify({"message": "Missing shift or user information."}), 400
+
+    try:
+        new_request = Request(
+            employee_id=employee_id,
+            request_type="Shift Swap",
+            request_date=datetime.utcnow(),
+            requested_shift_id=requested_shift_id,
+            target_shift_id=target_shift_id,
+            status="Pending"
+        )
+        db.session.add(new_request)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Swap request submitted successfully!",
+            "redirect": url_for("staff_dashboard")
+        }), 200
+
+    except Exception as e:
+        print("Error processing swap request:", e)
+        return jsonify({"message": "Internal server error."}), 500
 
 def start_app():
     app.run(debug=True)

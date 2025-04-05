@@ -267,26 +267,37 @@ class Shift(db.Model):
 
 class Request(db.Model):
     __tablename__ = 'request'
+    
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
-    status = db.Column(db.String(50), default='Pending')
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False) 
     request_type = db.Column(db.String(50))
     request_date = db.Column(db.Date, default=datetime.utcnow)
-    swap_with_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=True)
-    
+    requested_shift_id = db.Column(db.Integer, db.ForeignKey('shift.shift_id'))  
+    target_shift_id = db.Column(db.Integer, db.ForeignKey('shift.shift_id'))
+    status = db.Column(db.String(50), default='Pending') 
+
+    def __repr__(self):
+        return f"<Request {self.request_id} by {self.employee_id} for {self.request_type}>"
+
 
     @staticmethod
-    def createRequest(employee_id, request_type, request_date):
-        req = Request(employee_id=employee_id, request_type=request_type, request_date=request_date)
+    def createRequest(employee_id, request_type, request_date, requested_shift_id=None, target_shift_id=None):
+        req = Request(
+            employee_id=employee_id,
+            request_type=request_type,
+            request_date=request_date,
+            requested_shift_id=requested_shift_id,
+            target_shift_id=target_shift_id
+        )
         db.session.add(req)
         db.session.commit()
         return req
-    
+
     def cancelRequest(self):
         self.status = 'Cancelled'
         db.session.commit()
         return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 200
-    
+
     def getManagerApproval(self):
         if self.status == 'Cancelled':
             return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 400
@@ -299,7 +310,7 @@ class Request(db.Model):
                 return jsonify({"message": f"Time-off request {self.request_id} has been rejected or is in an invalid state."}), 400
         else:
             return jsonify({"message": "This is not a time-off request."}), 400
-    
+
     def getStaffApproval(self):
         if self.status == 'Cancelled':
             return jsonify({"message": f"Request {self.request_id} has been cancelled."}), 400
@@ -312,6 +323,7 @@ class Request(db.Model):
                 return jsonify({"message": f"Shift swap request {self.request_id} has been rejected or is in an invalid state."}), 400
         else:
             return jsonify({"message": "This is not a shift swap request."}), 400
+
     
 class TimeOff(db.Model):
     __tablename__ = 'time_off'
