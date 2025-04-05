@@ -6,55 +6,46 @@
   <title>Manager Dashboard - Requests</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/managerrequests.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    
-  </style>
 </head>
 <body>
   <nav>
     <ul>
-      <li><a href="{{ url_for('manager_dashboard') }}" >SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_createschedule') }}" >CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
       <li><a href="{{ url_for('manager_requests') }}" class="active">REQUESTS</a></li>
-      <li><a href="{{ url_for('manager_messages') }}" >MESSAGES</a></li>
-      <li><a href="{{ url_for('manager_reports') }}" >REPORTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Manager</div>
       <div class="dropdown-menu">
-        <a href="/logout">LOG OUT</a>
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
       </div>
     </div>
   </nav>
 
   <div class="requests-container">
 
-    
+    <!-- SHIFT SWAP REQUESTS -->
     <div class="request-box">
       <h3>Shift Swap Requests</h3>
       <div class="employee-list">
-        <div class="employee" id="employee3">
-          <div class="employee-info">
-            <span>Employee 3</span>
-            <span>Request Date - April 02, 2025</span>
+        {% for req in swap_requests %}
+          <div class="employee" id="request_{{ req.request_id }}">
+            <div class="employee-info">
+              <span>{{ req.requester_name }} ↔ {{ req.swap_with_name }}</span>
+              <span>Request Date - {{ req.request_date.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="buttons">
+              <button class="action-btn approve" id="approve_{{ req.request_id }}" onclick="handleApprove(this, 'deny_{{ req.request_id }}', 'request_{{ req.request_id }}')">Approve</button>
+              <button class="action-btn deny" id="deny_{{ req.request_id }}" onclick="handleDeny(this, 'approve_{{ req.request_id }}', 'request_{{ req.request_id }}')">Deny</button>
+              <span class="view-details" onclick="viewDetails()">View Details</span>
+            </div>
           </div>
-          <div class="buttons">
-            <button class="action-btn approve" id="approve3" onclick="handleApprove(this, 'deny3', 'employee3')">Approve</button>
-            <button class="action-btn deny" id="deny3" onclick="handleDeny(this, 'approve3', 'employee3')">Deny</button>
-            <span class="view-details" onclick="viewDetails()">View Details</span>
-          </div>
-        </div>
-        <div class="employee" id="employee4">
-          <div class="employee-info">
-            <span>Employee 4</span>
-            <span>Request Date - April 02, 2025</span>
-          </div>
-          <div class="buttons">
-            <button class="action-btn approve" id="approve4" onclick="handleApprove(this, 'deny4', 'employee4')">Approve</button>
-            <button class="action-btn deny" id="deny4" onclick="handleDeny(this, 'approve4', 'employee4')">Deny</button>
-            <span class="view-details" onclick="viewDetails()">View Details</span>
-          </div>
-        </div>
+        {% else %}
+          <p style="text-align:center; font-weight:bold;">No shift swap requests.</p>
+        {% endfor %}
       </div>
       <div class="footer-buttons">
         <button class="reset-btn" onclick="resetButtons(this)">Reset</button>
@@ -62,32 +53,25 @@
       </div>
     </div>
 
-    
+    <!-- TIME OFF REQUESTS -->
     <div class="request-box">
       <h3>Time Off Requests</h3>
       <div class="employee-list">
-        <div class="employee" id="employee1">
-          <div class="employee-info">
-            <span>Employee 1</span>
-            <span>Request Date - April 02, 2025</span>
+        {% for req in time_off_requests %}
+          <div class="employee" id="timeoff_{{ req.request_id }}">
+            <div class="employee-info">
+              <span>{{ req.requester_name }}</span>
+              <span>Request Date - {{ req.request_date.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="buttons">
+              <button class="action-btn approve" id="approve_timeoff_{{ req.request_id }}" onclick="handleApprove(this, 'deny_timeoff_{{ req.request_id }}', 'timeoff_{{ req.request_id }}')">Approve</button>
+              <button class="action-btn deny" id="deny_timeoff_{{ req.request_id }}" onclick="handleDeny(this, 'approve_timeoff_{{ req.request_id }}', 'timeoff_{{ req.request_id }}')">Deny</button>
+              <span class="view-details" onclick="viewDetails()">View Details</span>
+            </div>
           </div>
-          <div class="buttons">
-            <button class="action-btn approve" id="approve1" onclick="handleApprove(this, 'deny1', 'employee1')">Approve</button>
-            <button class="action-btn deny" id="deny1" onclick="handleDeny(this, 'approve1', 'employee1')">Deny</button>
-            <span class="view-details" onclick="viewDetails()">View Details</span>
-          </div>
-        </div>
-        <div class="employee" id="employee2">
-          <div class="employee-info">
-            <span>Employee 2</span>
-            <span>Request Date - April 02, 2025</span>
-          </div>
-          <div class="buttons">
-            <button class="action-btn approve" id="approve2" onclick="handleApprove(this, 'deny2', 'employee2')">Approve</button>
-            <button class="action-btn deny" id="deny2" onclick="handleDeny(this, 'approve2', 'employee2')">Deny</button>
-            <span class="view-details" onclick="viewDetails()">View Details</span>
-          </div>
-        </div>
+        {% else %}
+          <p style="text-align:center; font-weight:bold;">No time off requests.</p>
+        {% endfor %}
       </div>
       <div class="footer-buttons">
         <button class="reset-btn" onclick="resetButtons(this)">Reset</button>

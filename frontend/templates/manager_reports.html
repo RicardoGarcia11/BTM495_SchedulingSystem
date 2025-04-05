@@ -134,16 +134,18 @@
     <ul>
       <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
       <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_requests') }}" >REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
       <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-      <li><a href="{{ url_for('manager_reports') }}" class="active">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
     </ul>
     <div class="dropdown">
       <div class="dropdown-toggle">Manager</div>
       <div class="dropdown-menu">
-        <a href="/logout">LOG OUT</a>
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
       </div>
     </div>
+  </nav>
   </nav>
 
   <div class="requests-container">

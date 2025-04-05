@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, date
+from datetime import time, date, datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scheduling_system.db'
@@ -115,10 +115,16 @@ class Manager(db.Model):
 class ServiceStaff(db.Model):
     __tablename__ = 'service_staff'
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), primary_key=True)
-    availability = db.Column(db.String(50), nullable=True)
 
-    def createAvailability(self, availability):
-        self.availability = availability
+    def addAvailability(self, day_index, shift_type):
+        from models.db_models_4 import Availability  
+
+        availability = Availability(
+            employee_id=self.employee_id,
+            day_index=day_index,
+            shift_type=shift_type
+        )
+        db.session.add(availability)
         db.session.commit()
 
     def submitAvailability(self):
@@ -137,14 +143,13 @@ class ServiceStaff(db.Model):
 
         if swap_request.request_type != 'Shift Swap':
             return jsonify({"message": "This request is not a shift swap."}), 400
-        
-        requested_shift = Shift.query.get(swap_request.request_id)  
+
+        requested_shift = Shift.query.get(swap_request.request_id)
         target_shift = Shift.query.filter_by(employee_id=swap_request.employee_id).first()
 
         if not requested_shift or not target_shift:
             return jsonify({"message": "One or both shifts involved in the swap not found."}), 404
 
-       
         temp_employee_id = requested_shift.employee_id
         requested_shift.employee_id = target_shift.employee_id
         target_shift.employee_id = temp_employee_id
@@ -152,14 +157,14 @@ class ServiceStaff(db.Model):
         db.session.commit()
 
         return jsonify({"message": f"Swap request {swap_id} approved and shifts swapped."}), 200
-    
+
     def createSwapRequest(self, requested_shift_id, target_shift_id):
         requested_shift = Shift.query.get(requested_shift_id)
         target_shift = Shift.query.get(target_shift_id)
 
         if not requested_shift or not target_shift:
             return jsonify({"message": "One or both shifts not found."}), 404
-        
+
         if requested_shift.employee_id != self.employee_id:
             return jsonify({"message": "You can only request a swap for your own shift."}), 400
 
@@ -187,6 +192,7 @@ class ServiceStaff(db.Model):
     def logWorkHours(self, log):
         db.session.add(log)
         db.session.commit()
+
 
 class Schedule(db.Model):
     __tablename__ = 'schedule'
@@ -228,8 +234,8 @@ class Shift(db.Model):
     __tablename__ = 'shift'
     shift_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     shift_date = db.Column(db.Date, nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False)
-    end_time = db.Column(db.DateTime, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)  
+    end_time = db.Column(db.Time, nullable=False)    
     total_hours = db.Column(db.Numeric(5, 2), nullable=False)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'))
 
@@ -264,7 +270,10 @@ class Request(db.Model):
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=False)
     status = db.Column(db.String(50), default='Pending')
-    request_type = db.Column(db.String(50)) 
+    request_type = db.Column(db.String(50))
+    request_date = db.Column(db.Date, default=datetime.utcnow)
+    swap_with_id = db.Column(db.Integer, db.ForeignKey('user.employee_id'), nullable=True)
+    
 
     @staticmethod
     def createRequest(employee_id, request_type, request_date):
@@ -355,4 +364,15 @@ class ClockRecord(db.Model):
         db.session.add(record)
         db.session.commit()
         return record
+    
 
+class Availability(db.Model):
+    __tablename__ = 'availability'
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey("user.employee_id"), nullable=False)
+    day_index = db.Column(db.Integer, nullable=False)
+    shift_type = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self):
+        return f"<Availability emp:{self.employee_id} day:{self.day_index} shift:{self.shift_type}>"

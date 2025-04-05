@@ -100,22 +100,22 @@
   </style>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
-      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
-      <li><a href="{{ url_for('manager_viewstaffavailability') }}" class="active">STAFF AVAILABILITY</a></li>
-    </ul>
-    <div class="dropdown">
-      <div class="dropdown-toggle">Manager</div>
-      <div class="dropdown-menu">
-        <a href="{{ url_for('logout') }}">LOG OUT</a>
-      </div>
-    </div>
-  </nav>
+    <nav>
+        <ul>
+          <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+          <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+          <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+          <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+          <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+          <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+        </ul>
+        <div class="dropdown">
+          <div class="dropdown-toggle">Manager</div>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('logout') }}">LOG OUT</a>
+          </div>
+        </div>
+      </nav>
 
   <div class="schedule-container">
     <h2>Staff Availability</h2>

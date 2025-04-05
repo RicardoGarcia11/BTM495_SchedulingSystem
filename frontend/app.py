@@ -16,7 +16,7 @@ app.secret_key = "password"
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) 
 os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True) 
 db_path = os.path.join(basedir, 'instance', 'scheduling_system.db')
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -268,7 +268,34 @@ def manager_reports():
 
 @app.route('/manager_requests')
 def manager_requests():
-    return render_template('manager_requests.html')
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for('login'))
+
+    UserAlias = db.aliased(User)
+    swap_requests = db.session.query(
+        Request.request_id,
+        Request.status,
+        Request.request_date,
+        User.employee_name.label("requester_name"),
+        UserAlias.employee_name.label("swap_with_name")
+    ).join(User, Request.employee_id == User.employee_id
+    ).outerjoin(UserAlias, Request.swap_with_id == UserAlias.employee_id
+    ).filter(Request.request_type == 'Shift Swap').all()
+
+    time_off_requests = db.session.query(
+        Request.request_id,
+        Request.status,
+        Request.request_date,
+        User.employee_name.label("requester_name")
+    ).join(User, Request.employee_id == User.employee_id
+    ).filter(Request.request_type == 'Time Off').all()
+
+    return render_template(
+        'manager_requests.html',
+        swap_requests=swap_requests,
+        time_off_requests=time_off_requests
+    )
+
 
 
 @app.route("/staff_dashboard")
