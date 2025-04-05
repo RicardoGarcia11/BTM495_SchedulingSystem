@@ -365,15 +365,7 @@ class ClockRecord(db.Model):
         db.session.commit()
         return record
     
-class Availability(db.Model):
-    __tablename__ = 'availability'
 
-<<<<<<< HEAD
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey("user.employee_id"), nullable=False)
-    day_index = db.Column(db.Integer, nullable=False)  
-    shift_type = db.Column(db.String(50), nullable=False)  
-=======
 class Availability(db.Model):
     __tablename__ = 'availability'
 
@@ -381,7 +373,6 @@ class Availability(db.Model):
     employee_id = db.Column(db.Integer, db.ForeignKey("user.employee_id"), nullable=False)
     day_index = db.Column(db.Integer, nullable=False)
     shift_type = db.Column(db.String(50), nullable=False)
->>>>>>> e366bfd8e6d4831b2e59f46a0e315098890c8a0c
 
     def __repr__(self):
         return f"<Availability emp:{self.employee_id} day:{self.day_index} shift:{self.shift_type}>"
