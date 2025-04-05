@@ -414,15 +414,19 @@ def staff_shiftswap():
         return redirect(url_for('login'))
 
     employee_id = session.get("user_id")
-    today = datetime.today().date()
+    today = datetime.today()
+    today_date = today.date()
 
+    
     selected_month = int(request.args.get("month", today.month))
     selected_year = int(request.args.get("year", today.year))
 
+    
     month_start = datetime(selected_year, selected_month, 1).date()
     num_days = monthrange(selected_year, selected_month)[1]
     next_month = (month_start + timedelta(days=num_days)).replace(day=1)
     first_weekday = month_start.weekday()
+
 
     shifts_in_month = Shift.query.filter(
         Shift.shift_date >= month_start,
@@ -442,10 +446,10 @@ def staff_shiftswap():
                 "end_time": shift.end_time.strftime("%H:%M"),
                 "employee_id": user.employee_id
             }
-
         if shift.employee_id == employee_id and my_shift_id is None:
             my_shift_id = shift.shift_id
 
+    
     prev_month = selected_month - 1 if selected_month > 1 else 12
     prev_year = selected_year if selected_month > 1 else selected_year - 1
     next_month_val = selected_month + 1 if selected_month < 12 else 1
@@ -455,12 +459,12 @@ def staff_shiftswap():
         "staff_shiftswap.html",
         month_name=month_start.strftime("%B"),
         year=selected_year,
-        today=today.day if today.month == selected_month and today.year == selected_year else -1,
+        today=today.day,
         num_days=num_days,
         first_weekday=first_weekday,
         shift_map=shift_map,
         current_user_id=employee_id,
-        current_month=(today.month == selected_month and today.year == selected_year),
+        current_month=(selected_month == today.month and selected_year == today.year),
         prev_month=prev_month,
         prev_year=prev_year,
         next_month=next_month_val,
