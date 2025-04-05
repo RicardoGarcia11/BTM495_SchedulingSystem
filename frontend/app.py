@@ -603,6 +603,16 @@ def request_swap():
     if requested_shift_id is None or target_shift_id is None or employee_id is None:
         return jsonify({"message": "Missing shift or user information."}), 400
 
+    existing_request = Request.query.filter_by(
+        employee_id=employee_id,
+        requested_shift_id=requested_shift_id,
+        target_shift_id=target_shift_id,
+        request_type="Shift Swap"
+    ).first()
+
+    if existing_request:
+        return jsonify({"message": "You have already requested this shift swap."}), 400
+
     try:
         new_request = Request(
             employee_id=employee_id,
@@ -616,14 +626,13 @@ def request_swap():
         db.session.commit()
 
         return jsonify({
-            "message": "Swap request submitted successfully!",
-            "redirect": url_for("staff_dashboard")
+            "message": "Swap request submitted successfully!"
         }), 200
 
     except Exception as e:
         print("Error processing swap request:", e)
         return jsonify({"message": "Internal server error."}), 500
-
+    
 def start_app():
     app.run(debug=True)
 
