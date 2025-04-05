@@ -21,6 +21,68 @@
   color: #155724;
   border: 1px solid #c3e6cb;
 }
+
+#toggleAvailabilityBtn {
+  background-color: #6a0dad;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  margin: 20px auto 10px;
+  display: block;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease;
+}
+
+#toggleAvailabilityBtn:hover {
+  background-color: #5800b0;
+}
+
+
+#availabilityPanel {
+  margin-bottom: 20px;
+}
+
+.saved-availability {
+  background-color: #f5f5ff;
+  border: 1px solid #cfcfff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  width: 300px;
+  margin: 30px auto;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+.saved-availability h3 {
+  color: #6a0dad;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.saved-availability ul {
+  padding-left: 20px;
+  margin-top: 6px;
+}
+.saved-availability li {
+  margin: 2px 0;
+}
+
+.summary-box {
+    width: 60%;
+    margin: 20px auto 10px;
+    border: 2px solid #a97aff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 14px;
+    background-color: #fafafa;
+  }
+
+  .summary-entry {
+    margin-bottom: 6px;
+  }
   </style>
 </head>
 <body>
@@ -72,8 +134,32 @@
     </div>
 
     <button class="submit-button">Submit</button>
-    <a href="{{ url_for('staff_dashboard') }}" class="back-button">← Back to Dashboard</a>
-  </div>
+
+    <button id="toggleAvailabilityBtn" style="margin: 12px auto 8px; display: block; background-color: #6a0dad; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+      Show My Availability ⬇
+    </button>
+
+    <div id="availabilityPanel" class="saved-availability" style="display: none;">
+      <h3>🗂️ Your Submitted Availability:</h3>
+      {% if availability %}
+        <ul>
+          {% for item in availability %}
+            <li>Day {{ item.day_index }} — {{ item.shift_type }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>You haven’t submitted any availability yet.</p>
+      {% endif %}
+    
+      <form id="clearAvailabilityForm" style="margin-top: 10px;">
+        <button type="submit" style="background-color: #e74c3c; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+          🗑 Clear My Availability
+        </button>
+      </form>  
+    </div>   
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-button" style="margin-top: 0;">← Back to Dashboard</a>
+  </div> 
 
   <script>
     const shifts = [
@@ -261,6 +347,39 @@
   });
 });
     }); 
+
+    document.getElementById("clearAvailabilityForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (!confirm("Are you sure you want to clear your availability?")) return;
+
+      fetch("/clear_availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to clear availability.");
+          return response.json();
+        })
+        .then(data => {
+          alert(data.message || "Availability cleared.");
+          location.reload();  // Refresh page to reflect cleared state
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Something went wrong.");
+        });
+    });
+
+    document.getElementById("toggleAvailabilityBtn").addEventListener("click", function () {
+      const panel = document.getElementById("availabilityPanel");
+      const isVisible = panel.style.display === "block";
+      
+      panel.style.display = isVisible ? "none" : "block";
+      this.textContent = isVisible ? "Show My Availability ⬇" : "Hide My Availability ⬆";
+    });
 
   </script>
 </body>
