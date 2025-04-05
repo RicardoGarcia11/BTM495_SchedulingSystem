@@ -7,7 +7,12 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffdashboard.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    
+    .shift-day {
+      background-color: #673ab7;
+      color: white;
+      border-radius: 5px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -29,44 +34,29 @@
   </nav>
 
   <div class="calendar-container">
-    <div class="calendar-title">January 2025</div>
+    <div class="calendar-title">{{ month_name }} {{ year }}</div>
     <div class="calendar-days">
       <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
     </div>
     <div class="calendar-dates">
-      <div class="calendar-cell"></div>
-      <div class="calendar-cell"></div>
-      <div class="calendar-cell">1</div>
-      <div class="calendar-cell">2</div>
-      <div class="calendar-cell">3</div>
-      <div class="calendar-cell">4</div>
-      <div class="calendar-cell">5</div>
-      <div class="calendar-cell">6</div>
-      <div class="calendar-cell">7</div>
-      <div class="calendar-cell">8</div>
-      <div class="calendar-cell">9</div>
-      <div class="calendar-cell">10</div>
-      <div class="calendar-cell">11</div>
-      <div class="calendar-cell">12</div>
-      <div class="calendar-cell">13</div>
-      <div class="calendar-cell">14</div>
-      <div class="calendar-cell">15</div>
-      <div class="calendar-cell">16</div>
-      <div class="calendar-cell">17</div>
-      <div class="calendar-cell">18</div>
-      <div class="calendar-cell">19</div>
-      <div class="calendar-cell">20</div>
-      <div class="calendar-cell">21</div>
-      <div class="calendar-cell">22</div>
-      <div class="calendar-cell">23</div>
-      <div class="calendar-cell">24</div>
-      <div class="calendar-cell">25</div>
-      <div class="calendar-cell">26</div>
-      <div class="calendar-cell">27</div>
-      <div class="calendar-cell">28</div>
-      <div class="calendar-cell">29</div>
-      <div class="calendar-cell">30</div>
-      <div class="calendar-cell">31</div>
+      {% set first_day = datetime(year, now.month, 1).weekday() %}
+      {% set blanks = (first_day + 6) % 7 %}
+      {% for i in range(blanks) %}
+        <div class="calendar-cell"></div>
+      {% endfor %}
+
+      {% set num_days = (next_month - now.replace(day=1)).days %}
+      {% for day in range(1, num_days + 1) %}
+        {% set is_shift_day = false %}
+        {% for shift in shifts %}
+          {% if shift.shift_date.day == day and shift.shift_date.month == now.month and shift.shift_date.year == year %}
+            {% set is_shift_day = true %}
+          {% endif %}
+        {% endfor %}
+        <div class="calendar-cell {% if is_shift_day %}shift-day{% endif %}">
+          {{ day }}
+        </div>
+      {% endfor %}
     </div>
   </div>
 </body>

@@ -8,7 +8,7 @@ import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability
+from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability, Manager, ServiceStaff, schedule_shift
 
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "password"
@@ -64,60 +64,54 @@ def register():
         email = request.form["email"].strip().lower()
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
-        user_type = request.form["user_type"]
+        user_type = request.form["user_type"].strip()
 
-        
         if password != confirm_password:
             flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for("signup"))
 
-        
+        if user_type not in ["Manager", "Service_Staff"]:
+            flash("Invalid user type selected.", "danger")
+            return redirect(url_for("signup"))
+
         existing_account = Account.query.filter_by(email=email).first()
         if existing_account:
             flash("Email already registered. Please use a different email.", "danger")
             return redirect(url_for("signup"))
 
         try:
-            
             new_user = User(employee_name=employee_name, user_type=user_type)
             db.session.add(new_user)
-            db.session.flush() 
-           
-
+            db.session.flush()
 
             new_account = Account(email=email, employee_id=new_user.employee_id)
             new_account.set_password(password)
             db.session.add(new_account)
 
-            print(f"Creating account for: {email}, {employee_name}, type: {user_type}")
+            if user_type == "Manager":
+                db.session.add(Manager(employee_id=new_user.employee_id))
+                print("Manager entry added for:", new_user.employee_id)
+            elif user_type == "Service_Staff":
+                db.session.add(ServiceStaff(employee_id=new_user.employee_id))
+                print("ServiceStaff entry added for:", new_user.employee_id)
+
             db.session.commit()
-            print(" Registration saved to database.")
 
-
-            session['logged_in'] = True
-            session['user_type'] = user_type
-            session['user_id'] = new_user.employee_id
-            session['user_name'] = new_user.employee_name
+            session["logged_in"] = True
+            session["user_type"] = user_type
+            session["user_id"] = new_user.employee_id
+            session["user_name"] = new_user.employee_name
 
             flash(f"Welcome, {new_user.employee_name}! Your account was created successfully.", "success")
-
-            
-            if user_type == "Manager":
-                return redirect(url_for("manager_dashboard"))
-            else:
-                return redirect(url_for("staff_dashboard"))
+            return redirect(url_for("manager_dashboard") if user_type == "Manager" else url_for("staff_dashboard"))
 
         except Exception as e:
             db.session.rollback()
-            print(f"Error during registration: {str(e)}")
+            print("Registration error:", str(e))
             flash("An error occurred while creating your account. Please try again.", "danger")
             return redirect(url_for("signup"))
 
     return redirect(url_for("signup"))
-
-
-
-
 
 @app.route("/create_shift", methods=["POST"])
 def create_shift():
@@ -204,54 +198,60 @@ def manager_dashboard():
 def manager_createschedule():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         if request.method == "POST":
-            import json
+            try:
+                import json
+                schedule_data = json.loads(request.form["schedule_data"])
 
-            schedule_data = json.loads(request.form["schedule_data"])
-            print("Schedule Submitted:", schedule_data)
+                start_date = datetime.today().date()
+                day_map = [start_date + timedelta(days=i) for i in range(7)]
+                total_hours = len(schedule_data) * 8
 
-            start_date = datetime.today().date()
-            day_map = [start_date + timedelta(days=i) for i in range(7)]
-
-            total_hours = len(schedule_data) * 8  
-            schedule = Schedule.createSchedule(
-                start_date=start_date,
-                end_date=start_date + timedelta(days=6),
-                total_hours=total_hours,
-                manager_id=session['user_id']
-            )
-            db.session.add(schedule)
-
-            for item in schedule_data:
-                emp_id = int(item["employee_id"])
-                shift_date = day_map[int(item["day_index"])]
-
-                shift = Shift(
-                    employee_id=emp_id,
-                    shift_date=shift_date,
-                    start_time=time(9, 0),
-                    end_time=time(17, 0),
-                    total_hours=8
+                new_schedule = Schedule(
+                    start_date=start_date,
+                    end_date=start_date + timedelta(days=6),
+                    total_hours=total_hours,
+                    manager_id=session['user_id']
                 )
+                db.session.add(new_schedule)
+                db.session.flush()
 
-                db.session.add(shift)
-                schedule.shifts.append(shift)
+                for entry in schedule_data:
+                    emp_id = int(entry["employee_id"])
+                    shift_date = day_map[int(entry["day_index"])]
 
-            db.session.commit()
+                    shift = Shift(
+                        employee_id=emp_id,
+                        shift_date=shift_date,
+                        start_time=time(9, 0),
+                        end_time=time(17, 0),
+                        total_hours=8
+                    )
+                    db.session.add(shift)
+                    db.session.flush()
 
-        
-            return redirect(url_for("manager_createschedule", success="1"))
+                    db.session.execute(schedule_shift.insert().values(
+                        schedule_id=new_schedule.schedule_id,
+                        shift_id=shift.shift_id
+                    ))
 
-    
+                db.session.commit()
+                return redirect(url_for("manager_createschedule", success="1"))
+
+            except Exception as e:
+                db.session.rollback()
+                flash("Failed to create schedule. Try again.", "danger")
+                return redirect(url_for("manager_createschedule"))
+
         staff_list = User.query.filter_by(user_type="Service_Staff").order_by(User.employee_id).all()
 
-        
         if request.args.get("success") == "1":
-            flash("Weekly schedule created successfully!", "success")
+            flash("Weekly schedule created successfully.", "success")
             return render_template("manager_createschedule.html", staff_list=staff_list, success_redirect=True)
 
         return render_template("manager_createschedule.html", staff_list=staff_list)
 
     return redirect(url_for("manager_login"))
+
 
 
 
@@ -300,11 +300,32 @@ def manager_requests():
 
 @app.route("/staff_dashboard")
 def staff_dashboard():
-    if 'logged_in' in session and session.get('user_type') == 'Service_Staff':
-        return render_template("staff_dashboard.html")
-    else:
+    if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
         return redirect(url_for('login'))
-    
+
+    employee_id = session.get("user_id")
+    today = datetime.today()
+    month_start = today.replace(day=1)
+    next_month = (month_start + timedelta(days=32)).replace(day=1)
+
+    shifts = Shift.query.filter(
+        Shift.employee_id == employee_id,
+        Shift.shift_date >= month_start,
+        Shift.shift_date < next_month
+    ).all()
+
+    return render_template(
+        "staff_dashboard.html",
+        month_name=today.strftime("%B"),
+        year=today.year,
+        shifts=shifts,
+        now=today,
+        next_month=next_month,
+        datetime=datetime
+    )
+
+
+   
 @app.route("/logout")
 def logout():
     session.clear()
