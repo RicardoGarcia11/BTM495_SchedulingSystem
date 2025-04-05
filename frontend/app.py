@@ -499,13 +499,14 @@ def staff_createavailability():
 
             print("Received staff_createavailability data:", data)
 
-           
+            Availability.query.filter_by(employee_id=employee_id).delete()
+
             for day_index, details in data.items():
                 for shift in details["shifts"]:
                     availability = Availability(
                         employee_id=employee_id,
                         day_index=int(day_index),
-                        shift_type=shift  
+                        shift_type=shift
                     )
                     db.session.add(availability)
 
@@ -517,7 +518,9 @@ def staff_createavailability():
             db.session.rollback()
             return jsonify({"error": "Something went wrong."}), 500
 
-    return render_template("staff_createavailability.html")
+    existing_availability = Availability.query.filter_by(employee_id=employee_id).order_by(Availability.day_index).all()
+    
+    return render_template("staff_createavailability.html", availability=existing_availability)
 
 
 @app.route("/manager_report_detail")
@@ -541,6 +544,20 @@ def manager_viewstaffavailability():
     return render_template("manager_viewstaffavailability.html", records=availability_records)
 
 
+@app.route("/clear_availability", methods=["POST"])
+def clear_availability():
+    if "logged_in" not in session or session.get("user_type") != "Service_Staff":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    employee_id = session.get("user_id")
+    try:
+        Availability.query.filter_by(employee_id=employee_id).delete()
+        db.session.commit()
+        return jsonify({"message": "Availability cleared successfully."}), 200
+    except Exception as e:
+        print("Error clearing availability:", e)
+        db.session.rollback()
+        return jsonify({"error": "Failed to clear availability."}), 500
 
 def start_app():
     app.run(debug=True)
