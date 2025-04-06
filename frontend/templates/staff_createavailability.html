@@ -7,82 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffcreateavailability.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-.flash {
-  padding: 10px;
-  margin: 20px auto;
-  width: 60%;
-  text-align: center;
-  font-weight: bold;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.flash.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
 
-#toggleAvailabilityBtn {
-  background-color: #6a0dad;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 18px;
-  margin: 20px auto 10px;
-  display: block;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  transition: background-color 0.2s ease;
-}
-
-#toggleAvailabilityBtn:hover {
-  background-color: #5800b0;
-}
-
-
-#availabilityPanel {
-  margin-bottom: 20px;
-}
-
-.saved-availability {
-  background-color: #f5f5ff;
-  border: 1px solid #cfcfff;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  width: 300px;
-  margin: 30px auto;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
-}
-.saved-availability h3 {
-  color: #6a0dad;
-  font-size: 15px;
-  margin-bottom: 6px;
-}
-.saved-availability ul {
-  padding-left: 20px;
-  margin-top: 6px;
-}
-.saved-availability li {
-  margin: 2px 0;
-}
-
-.summary-box {
-    width: 60%;
-    margin: 20px auto 10px;
-    border: 2px solid #a97aff;
-    border-radius: 8px;
-    padding: 10px 15px;
-    font-size: 14px;
-    background-color: #fafafa;
-  }
-
-  .summary-entry {
-    margin-bottom: 6px;
-  }
   </style>
 </head>
 <body>
@@ -165,7 +90,7 @@
     const shifts = [
       { time: '11:00 AM - 5:00 PM', label: 'Afternoon' },
       { time: '5:00 PM - 11:00 PM', label: 'Evening' },
-      { time: '11:00 AM - 7:00 PM', label: 'Full Day (11-5)' },
+      { time: '11:00 AM - 7:00 PM', label: 'Full Day (11-7)' },
       { time: '3:00 PM - 11:00 PM', label: 'Full Day (3-11)' }
     ];
     const dayMap = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];

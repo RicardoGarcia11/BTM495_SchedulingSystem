@@ -164,3 +164,15 @@
     .back-btn:hover {
       background-color: #5a005a;
     }
+
+    .no-shift-msg {
+      margin: 50px auto;
+      padding: 20px;
+      max-width: 500px;
+      background-color: #ffecec;
+      color: #b30000;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #f5c2c2;
+      border-radius: 10px;
+    }
