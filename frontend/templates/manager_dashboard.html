@@ -124,6 +124,13 @@
       color: white;
       transform: scale(1.05);
     }
+
+    .today-cell {
+      background-color: #a259ff;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -165,7 +172,10 @@
     
       {# Render the actual days #}
       {% for day in range(1, num_days.days + 1) %}
-        <div class="calendar-cell">{{ day }}</div>
+        {% set date_obj = now.replace(day=day).date() %}
+        <div class="calendar-cell {% if date_obj == today %}today-cell{% endif %}">
+          {{ day }}
+        </div>
       {% endfor %}
     </div>
     </div>

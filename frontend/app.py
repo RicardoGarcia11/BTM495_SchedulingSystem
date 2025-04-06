@@ -254,7 +254,8 @@ def manager_login():
 def manager_dashboard():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
         now = datetime.today()
-        return render_template("manager_dashboard.html", now=now, timedelta=timedelta)
+        today_date = now.date()
+        return render_template("manager_dashboard.html", now=now, today=today_date, timedelta=timedelta)
     else:
         return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
 
