@@ -9,4 +9,4 @@ A scheduling system for restaurant employees to manage their work shifts. Servic
 * Employees can swap shifts with approval  
 * Employees can request time off  
 * Built-in messaging system for communication  
-* User-friendly interface  
+* User-friendly interface, easy for navigation across web pages 
