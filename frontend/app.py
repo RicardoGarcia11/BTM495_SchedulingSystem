@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 import json
 from calendar import monthrange
 from sqlalchemy.exc import SQLAlchemyError
+from flask import Response 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -146,16 +147,73 @@ def request_time_off():
 
 @app.route("/send_message", methods=["POST"])
 def send_message():
-    data = request.get_json()
-    sender = User.query.get(data["sender_id"])
-    if not sender:
-        return jsonify({"error": "Sender not found"}), 404
+    if "logged_in" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
     try:
-        sender.sendMessage(recipient_id=data["recipient_id"], text_message=data["message_text"])
-        return jsonify({"message": "Message sent"}), 200
+        sender_id = session.get("user_id")
+        recipient_id = request.form.get("recipient_id")
+        message_text = request.form.get("message_text")
+
+        now = datetime.now()
+
+        message = Message(
+            sender_id=sender_id,
+            recipient_id=recipient_id,
+            message_text=message_text,
+            latest_date=now.date(),
+            latest_time=now
+        )
+
+        db.session.add(message)
+        db.session.commit()
+
+        return Response("Message sent", status=200)
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+@app.route("/lookup_user_by_email")
+def lookup_user_by_email():
+    email = request.args.get("email", "").strip().lower()
+    user = Account.query.filter_by(email=email).first()
+    if user:
+        return jsonify({"employee_id": user.employee_id})
+    return jsonify({"error": "User not found"}), 404
+
+
+@app.route("/load_chat_history")
+def load_chat_history():
+    if "logged_in" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    current_user_id = session["user_id"]
+    other_user_id = request.args.get("recipient_id")
+    if not other_user_id:
+        return jsonify({"error": "Missing recipient ID"}), 400
+
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user_id) & (Message.recipient_id == other_user_id)) |
+        ((Message.sender_id == other_user_id) & (Message.recipient_id == current_user_id))
+    ).order_by(Message.latest_time).all()
+
+    message_list = [{
+        "message_text": msg.message_text,
+        "sent_by_me": msg.sender_id == current_user_id
+    } for msg in messages]
+
+    return jsonify({"messages": message_list})
+
+@app.route("/manager_messages", methods=["GET"])
+def manager_messages():
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for('login'))
+
+    current_user_id = session.get("user_id")
+    current_user = User.query.get(current_user_id)
+    users = User.query.filter(User.employee_id != current_user_id).all()
+
+    return render_template("manager_messages.html", users=users, current_user=current_user)
 
 @app.route("/signup")
 def signup():
@@ -257,15 +315,6 @@ def manager_createschedule():
     return redirect(url_for("manager_login"))
 
 
-
-
-
-@app.route("/manager_messages", methods=["GET"])
-def manager_messages():
-    if 'logged_in' not in session or session.get('user_type') != 'Manager':
-        return redirect(url_for('login'))
-
-    return render_template("manager_messages.html")
 
 @app.route('/manager_reports')
 def manager_reports():
@@ -555,7 +604,12 @@ def staff_messages():
     if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
         return redirect(url_for('login'))
 
-    return render_template("staff_messages.html")
+    current_user_id = session.get("user_id")
+    current_user = User.query.get(current_user_id)
+    users = User.query.filter(User.employee_id != current_user_id).all()
+
+    return render_template("staff_messages.html", users=users, current_user=current_user)
+
 
 @app.route("/staff_createavailability", methods=["GET", "POST"])
 def staff_createavailability():
