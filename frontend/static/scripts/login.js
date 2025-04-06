@@ -7,7 +7,7 @@ function handleLogin() {
     return;
   }
 
-  // Simulate login (replace with real logic)
+  
   console.log("Logging in with:", { email, password });
 
   alert("Login successful (mock)!");

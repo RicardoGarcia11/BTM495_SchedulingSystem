@@ -100,29 +100,29 @@
   </style>
 </head>
 <body>
-    <nav>
-        <ul>
-          <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
-          <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
-          <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
-          <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-          <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
-          <li><a href="{{ url_for('manager_viewstaffavailability') }}"class="active">STAFF AVAILABILITY</a></li>
-        </ul>
-        <div class="dropdown">
-          <div class="dropdown-toggle">Manager</div>
-          <div class="dropdown-menu">
-            <a href="{{ url_for('logout') }}">LOG OUT</a>
-          </div>
-        </div>
-      </nav>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}" class="active">STAFF AVAILABILITY</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
 
   <div class="schedule-container">
     <h2>Staff Availability</h2>
 
     <div class="filters">
       <input type="text" id="nameFilter" placeholder="Search by employee name...">
-      <input type="text" id="dateFilter" placeholder="Search by date (e.g. April 2)...">
+      <input type="text" id="dateFilter" placeholder="Search by date (e.g. April 10)...">
     </div>
 
     <button class="export-button" onclick="exportToCSV()">Download CSV</button>
@@ -137,28 +137,12 @@
           </tr>
         </thead>
         <tbody>
-          {% set day_labels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %}
-          {% set month = "April" %}
           {% for record in records %}
-            {% set date_str = month ~ ' ' ~ record.day_index %}
-            {% set weekday = day_labels[(record.day_index - 1) % 7] %}
-            {% set full_date = weekday ~ ', ' ~ date_str %}
-
-            {% if record.shift_type == 'Afternoon' %}
-              {% set shift_hours = "11:00 AM – 5:00 PM" %}
-            {% elif record.shift_type == 'Evening' %}
-              {% set shift_hours = "5:00 PM – 11:00 PM" %}
-            {% elif record.shift_type == 'Full Day' %}
-              {% set shift_hours = "3:00 PM – 11:00 PM" %}
-            {% else %}
-              {% set shift_hours = record.shift_type %}
-            {% endif %}
-
-            <tr>
-              <td>{{ record.employee_name }}</td>
-              <td>{{ full_date }}</td>
-              <td>{{ shift_hours }}</td>
-            </tr>
+          <tr>
+            <td>{{ record.employee_name }}</td>
+            <td>{{ record.date }}</td>
+            <td>{{ record.shift_hours }}</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

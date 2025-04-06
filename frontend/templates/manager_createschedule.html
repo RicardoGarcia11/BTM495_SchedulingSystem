@@ -6,222 +6,312 @@
   <title>Manager Dashboard - Create Schedule</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/managercreateschedule.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-
   <style>
+    body { font-family: 'Inter', sans-serif; }
     .available-btn {
       background-color: #d2b4f2;
       border: none;
       padding: 5px 10px;
       cursor: pointer;
       border-radius: 4px;
+      font-size: 12px;
     }
-
     .assigned-cell {
-      text-align: center;
       background-color: #a9dfbf;
-      border-radius: 4px;
-      padding: 5px;
+      border-radius: 6px;
+      padding: 2px 4px;
+      margin: 2px auto;
+      font-size: 10px;
+      text-align: center;
+      max-width: 90%;
     }
-
+    .assigned-cell small {
+      font-size: 9px;
+      display: block;
+      margin-top: 1px;
+      color: #333;
+    }
     .undo-btn {
-      margin-top: 4px;
+      margin-top: 2px;
       background: #ff6b6b;
       color: white;
       border: none;
-      padding: 3px 6px;
+      padding: 2px 5px;
+      font-size: 9px;
       border-radius: 4px;
       cursor: pointer;
     }
-
-    .flash {
-      padding: 10px;
-      margin: 20px auto;
-      width: 60%;
+    .schedule-table td {
+      vertical-align: top;
       text-align: center;
+      padding: 4px;
+      min-width: 100px;
+      height: 120px;
+      overflow-y: auto;
+    }
+    .submit-btn {
+      display: block;
+      margin: 20px auto;
+      background-color: #8e44ec;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      font-size: 14px;
       font-weight: bold;
       border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-
-    .flash.success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      cursor: pointer;
     }
     .back-btn {
-  display: block;
-  text-align: center;
-  margin: 20px auto 0;
-  padding: 12px 24px;
-  font-weight: bold;
-  font-size: 14px;
-  background-color: #eeeeee;
-  color: #333;
-  border-radius: 8px;
-  text-decoration: none;
-  border: 2px solid #8e44ec;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+      display: block;
+      text-align: center;
+      margin: 10px auto 0;
+      padding: 10px 20px;
+      background-color: #eeeeee;
+      color: #333;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      border: 2px solid #8e44ec;
+      text-decoration: none;
+    }
+    .back-btn:hover {
+      background-color: #8e44ec;
+      color: white;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+    }
+    .modal-content h3 { margin-bottom: 10px; }
+    .modal-content label {
+      display: block;
+      margin: 6px 0;
+      font-size: 14px;
+    }
+    .modal-buttons { margin-top: 10px; }
+    .modal-buttons button {
+      margin: 0 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .confirm-btn { background-color: #2ecc71; color: white; }
+    .cancel-btn { background-color: #e74c3c; color: white; }
 
-.back-btn:hover {
-  background-color: #8e44ec;
-  color: white;
-}
+    .flash-wrapper {
+      position: relative;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 900px;
+    }
+
+    .flash-message {
+      padding: 14px 20px;
+      margin-bottom: 10px;
+      border-left: 6px solid;
+      border-radius: 5px;
+      font-weight: 500;
+      position: relative;
+      background-color: #f4f4f4;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .flash-message.warning {
+      border-color: #f39c12;
+      background-color: #fff8e6;
+      color: #7d5a00;
+    }
+
+    .flash-message.success {
+      border-color: #2ecc71;
+      background-color: #eafaf1;
+      color: #207144;
+    }
+
+    .flash-message.danger {
+      border-color: #e74c3c;
+      background-color: #fdecea;
+      color: #a94442;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 18px;
+      color: #555;
+      cursor: pointer;
+    }
   </style>
-
-  <script>
-    setTimeout(() => {
-      const flash = document.getElementById("flash-message");
-      if (flash) flash.style.display = "none";
-    }, 3000);
-  </script>
-
-  {% if success_redirect %}
-  <script>
-    setTimeout(() => {
-      window.location.href = "{{ url_for('manager_dashboard') }}";
-    }, 3000);
-  </script>
-  {% endif %}
 </head>
 <body>
 
-  
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div id="flash-message">
+      <div class="flash-wrapper">
         {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
+          <div class="flash-message {{ category }}">
+            {{ message }}
+            <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+          </div>
         {% endfor %}
       </div>
     {% endif %}
   {% endwith %}
 
+<nav>
+  <ul>
+    <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+    <li><a href="{{ url_for('manager_createschedule') }}" class="active">CREATE SCHEDULE</a></li>
+    <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+    <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+    <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+    <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+  </ul>
+</nav>
 
-  <nav>
-    <ul>
-      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_createschedule') }}"class="active">CREATE SCHEDULE</a></li>
-      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
-      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
-      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
-      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
-    </ul>
-    <div class="dropdown">
-      <div class="dropdown-toggle">Manager</div>
-      <div class="dropdown-menu">
-        <a href="{{ url_for('logout') }}">LOG OUT</a>
-      </div>
-    </div>
-  </nav>
-
-
-  <div class="schedule-container">
-    <h2>Create Weekly Schedule</h2>
-
-    <form method="POST" id="schedule-form">
-      <input type="hidden" name="schedule_data" id="schedule-data">
-
-      <table class="schedule-table">
-        <thead>
-          <tr id="days-row"></tr>
-        </thead>
-        <tbody>
-          {% for staff in staff_list %}
-          <tr>
-            <td class="employee-name">{{ staff.employee_name }}</td>
-            {% for day in range(7) %}
-            <td data-employee="{{ staff.employee_id }}" data-day="{{ day }}">
-              <button type="button" class="available-btn" onclick="assignCell(this)">Available</button>
-            </td>
-            {% endfor %}
-          </tr>
+<div class="schedule-container">
+  <h2>Create Weekly Schedule</h2>
+  <form method="POST" id="schedule-form">
+    <input type="hidden" name="schedule_data" id="schedule-data">
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>Staff</th>
+          {% for date in week_dates %}
+            <th>{{ date.strftime('%a - %b %d') }}</th>
           {% endfor %}
-        </tbody>
-      </table>
+        </tr>
+      </thead>
+      <tbody>
+        {% for staff in staff_list %}
+        <tr>
+          <td class="employee-name">{{ staff.employee_name }}</td>
+          {% for date in week_dates %}
+          <td data-employee="{{ staff.employee_id }}" data-date="{{ date.strftime('%Y-%m-%d') }}" data-day="{{ date.strftime('%A') }}">
+            <button type="button" class="available-btn" onclick="openModal(this);">Assign</button>
+          </td>
+          
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="submit-btn" type="submit">Submit Schedule</button>
+    <a href="{{ url_for('manager_dashboard') }}" class="back-btn">&larr; Back to Dashboard</a>
+  </form>
+</div>
 
-      <button class="submit-btn" type="submit">Submit Schedule</button>
-      <a href="{{ url_for('manager_dashboard') }}" class="back-btn">← Back to Dashboard</a>
-    </form>
+<div id="shiftModal" class="modal">
+  <div class="modal-content">
+    <h3>Select Shifts</h3>
+    <div id="modal-checkboxes"></div>
+    <div class="modal-buttons">
+      <button class="confirm-btn" onclick="confirmShift()">Confirm</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+    </div>
   </div>
+</div>
 
-  <script>
-    function getWeekDates() {
-      const today = new Date();
-      const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
-      const weekDates = [];
-      for (let i = 0; i < 7; i++) {
-        const current = new Date(monday);
-        current.setDate(monday.getDate() + i);
-        const weekday = current.toLocaleDateString(undefined, { weekday: 'short' });
-        const monthDay = current.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        weekDates.push(`${weekday} - ${monthDay}`);
-      }
-      return weekDates;
-    }
+<script>
+let activeCell = null;
+let currentDayName = '';
 
-    function assignCell(button) {
-      const td = button.parentElement;
-      const employeeId = td.getAttribute("data-employee");
-      const day = td.getAttribute("data-day");
+function openModal(button, dayName) {
+  activeCell = button.parentElement;
+  currentDayName = dayName;
 
-      td.innerHTML = `
-        <div class="assigned-cell" data-assigned="true">
-          Assigned<br>
-          <button type="button" class="undo-btn">Undo</button>
-        </div>
-      `;
-      td.setAttribute("data-employee", employeeId);
-      td.setAttribute("data-day", day);
+  const modalBox = document.getElementById("modal-checkboxes");
+  modalBox.innerHTML = '';
 
-      const undoButton = td.querySelector('.undo-btn');
-      undoButton.onclick = () => {
-        td.innerHTML = `
-          <button type="button" class="available-btn"
-                  onclick="assignCell(this)">
-            Available
-          </button>
-        `;
-        td.setAttribute("data-employee", employeeId);
-        td.setAttribute("data-day", day);
-      };
-    }
+  const shifts = [
+    { label: "Morning", weekday: "11:00 AM – 3:00 PM", weekend: "11:00 AM – 4:00 PM" },
+    { label: "Afternoon", weekday: "3:00 PM – 6:30 PM", weekend: "4:00 PM – 8:00 PM" },
+    { label: "Evening", weekday: "6:30 PM – 10:00 PM", weekend: "8:00 PM – 12:00 AM" }
+  ];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const daysRow = document.getElementById('days-row');
-      const weekDates = getWeekDates();
+  const isWeekend = ["Friday", "Saturday"].includes(dayName);
 
-      const emptyTh = document.createElement('th');
-      emptyTh.textContent = "";
-      daysRow.appendChild(emptyTh);
+  shifts.forEach(shift => {
+    const time = isWeekend ? shift.weekend : shift.weekday;
+    const checkbox = document.createElement("label");
+    checkbox.innerHTML = `<input type="checkbox" value="${shift.label}"> ${shift.label} (${time})`;
+    modalBox.appendChild(checkbox);
+  });
 
-      weekDates.forEach(day => {
-        const th = document.createElement('th');
-        th.textContent = day;
-        daysRow.appendChild(th);
-      });
+  document.getElementById("shiftModal").style.display = "block";
+}
 
-      const submitBtn = document.querySelector('.submit-btn');
-      submitBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+function closeModal() {
+  document.getElementById("shiftModal").style.display = "none";
+  activeCell = null;
+}
 
-        const assigned = [];
-        const cells = document.querySelectorAll('td[data-employee][data-day]');
+function confirmShift() {
+  const checkboxes = document.querySelectorAll('#modal-checkboxes input[type=checkbox]');
+  let selected = [];
+  checkboxes.forEach(cb => {
+    if (cb.checked) selected.push(cb.value);
+  });
 
-        cells.forEach(td => {
-          const assignedCell = td.querySelector('.assigned-cell');
-          if (assignedCell && assignedCell.dataset.assigned === "true") {
-            assigned.push({
-              employee_id: td.getAttribute("data-employee"),
-              day_index: td.getAttribute("data-day")
-            });
-          }
+  const shifts = {
+    "Morning": ["11:00 AM – 3:00 PM", "11:00 AM – 4:00 PM"],
+    "Afternoon": ["3:00 PM – 6:30 PM", "4:00 PM – 8:00 PM"],
+    "Evening": ["6:30 PM – 10:00 PM", "8:00 PM – 12:00 AM"]
+  };
+
+  const isWeekend = ["Friday", "Saturday"].includes(currentDayName);
+  const shiftHtml = selected.map(label => {
+    const time = isWeekend ? shifts[label][1] : shifts[label][0];
+    return `
+      <div class="assigned-cell" data-label="${label}">
+        ${label}<small>${time}</small>
+        <button type="button" class="undo-btn" onclick="undoAssign(this)">Undo</button>
+      </div>
+    `;
+  }).join('');
+
+  activeCell.innerHTML = shiftHtml;
+  closeModal();
+}
+
+function undoAssign(btn) {
+  const td = btn.closest('td');
+  td.innerHTML = `<button type="button" class="available-btn" onclick="openModal(this, '${currentDayName}')">Assign</button>`;
+}
+
+document.getElementById('schedule-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data = [];
+  document.querySelectorAll('.schedule-table tbody tr').forEach(row => {
+    row.querySelectorAll('td[data-employee]').forEach(cell => {
+      const assigned = cell.querySelectorAll('.assigned-cell');
+      assigned.forEach(shift => {
+        data.push({
+          employee_id: cell.getAttribute('data-employee'),
+          date: cell.getAttribute('data-date'),
+          shift: shift.getAttribute('data-label')
         });
-
-        document.getElementById('schedule-data').value = JSON.stringify(assigned);
-        document.getElementById('schedule-form').submit();
       });
     });
-  </script>
+  });
+  document.getElementById('schedule-data').value = JSON.stringify(data);
+  this.submit();
+});
+</script>
 </body>
 </html>

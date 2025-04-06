@@ -10,13 +10,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask import Response 
 from collections import defaultdict
 from flask import render_template
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, text
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability, Manager, ServiceStaff, schedule_shift
 
+app = Flask(__name__, static_folder='frontend/static', instance_relative_config=True)
 app = Flask(__name__, instance_relative_config=True)
+def get_two_week_dates():
+    today = datetime.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    return [(start_of_week + timedelta(days=i)) for i in range(14)]
 app.secret_key = "password"
 
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) 
@@ -252,71 +257,176 @@ def manager_login():
 
 @app.route("/manager_dashboard")
 def manager_dashboard():
-    if 'logged_in' in session and session.get('user_type') == 'Manager':
-        now = datetime.today()
-        return render_template("manager_dashboard.html", now=now, timedelta=timedelta)
-    else:
-        return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for("login"))
+
+    now = datetime.today()
+    today = datetime.today()
+    month_start = datetime(now.year, now.month, 1)
+    next_month = (month_start + timedelta(days=32)).replace(day=1)
+
+    result = db.session.execute(text("""
+        SELECT shift_id, employee_id, shift_date, start_time, end_time
+        FROM shift
+    """))
+
+    assigned_map = {}
+
+    for row in result:
+        shift_id = row.shift_id
+        employee_id = row.employee_id
+        shift_date = row.shift_date
+        start_time_raw = row.start_time
+        end_time_raw = row.end_time
+
+        # Safely parse shift_date
+        if isinstance(shift_date, str):
+            try:
+                shift_date = datetime.fromisoformat(shift_date)
+            except ValueError:
+                shift_date = datetime.strptime(shift_date, "%Y-%m-%d %H:%M:%S.%f")
+
+        # Skip if not in this month
+        if not (month_start <= shift_date < next_month):
+            continue
+
+        # Safely parse start and end times
+        if isinstance(start_time_raw, str):
+            try:
+                start_time = datetime.fromisoformat(start_time_raw).time()
+            except ValueError:
+                start_time = datetime.strptime(start_time_raw, "%H:%M:%S.%f").time()
+        else:
+            start_time = start_time_raw
+
+        if isinstance(end_time_raw, str):
+            try:
+                end_time = datetime.fromisoformat(end_time_raw).time()
+            except ValueError:
+                end_time = datetime.strptime(end_time_raw, "%H:%M:%S.%f").time()
+        else:
+            end_time = end_time_raw
+
+        user = User.query.get(employee_id)
+        if user:
+            day = shift_date.day
+            if day not in assigned_map:
+                assigned_map[day] = []
+            assigned_map[day].append(f"{user.employee_name} ({start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')})")
+
+    return render_template(
+        "manager_dashboard.html",
+        now=now,
+        today=today,
+        timedelta=timedelta,
+        assigned_map=assigned_map
+    )
+
 
 @app.route("/manager_createschedule", methods=["GET", "POST"])
 def manager_createschedule():
-    if 'logged_in' in session and session.get('user_type') == 'Manager':
-        if request.method == "POST":
-            try:
-                import json
-                schedule_data = json.loads(request.form["schedule_data"])
+    # Authentication check
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for("manager_login"))
 
-                
-                today = datetime.today().date()
-                start_date = today - timedelta(days=today.weekday()) 
-                day_map = [start_date + timedelta(days=i) for i in range(7)]
-                total_hours = len(schedule_data) * 8
+    # POST: Create a new schedule
+    if request.method == "POST":
+        try:
+            schedule_data = json.loads(request.form["schedule_data"])
 
-                new_schedule = Schedule(
-                    start_date=start_date,
-                    end_date=start_date + timedelta(days=6),
-                    total_hours=total_hours,
-                    manager_id=session['user_id']
+            today = datetime.today().date()
+            start_date = today - timedelta(days=today.weekday())  # Monday
+            end_date = start_date + timedelta(days=6)
+
+            total_hours = len(schedule_data) * 8  # Estimate — can refine later
+            new_schedule = Schedule(
+                start_date=start_date,
+                end_date=end_date,
+                total_hours=total_hours,
+                manager_id=session['user_id']
+            )
+            db.session.add(new_schedule)
+            db.session.flush()
+
+            # Define shift time mapping
+            shift_times = {
+                "Morning": {
+                    "weekday": (time(11, 0), time(15, 0)),
+                    "weekend": (time(11, 0), time(16, 0))
+                },
+                "Afternoon": {
+                    "weekday": (time(15, 0), time(18, 30)),
+                    "weekend": (time(16, 0), time(20, 0))
+                },
+                "Evening": {
+                    "weekday": (time(18, 30), time(22, 0)),
+                    "weekend": (time(20, 0), time(0, 0))  # midnight
+                }
+            }
+
+            for entry in schedule_data:
+                emp_id = int(entry["employee_id"])
+                shift_label = entry["shift"]
+                shift_date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
+                day_name = shift_date.strftime("%A")
+
+                is_weekend = day_name in ["Friday", "Saturday"]
+                start_time, end_time = shift_times[shift_label]["weekend" if is_weekend else "weekday"]
+
+                # Handle midnight edge case for evening shift
+                if shift_label == "Evening" and is_weekend and end_time == time(0, 0):
+                    end_time = time(23, 59)
+
+                # Skip if a shift for same employee + time already exists
+                existing_shift = Shift.query.filter_by(
+                    employee_id=emp_id,
+                    shift_date=shift_date,
+                    start_time=start_time,
+                    end_time=end_time
+                ).first()
+                if existing_shift:
+                    user = User.query.get(emp_id)
+                    flash(f"{user.employee_name} is already assigned on {shift_date.strftime('%A %b %d')} for that shift.", "warning")
+                    continue
+
+
+                shift = Shift(
+                    employee_id=emp_id,
+                    shift_date=shift_date,
+                    start_time=start_time,
+                    end_time=end_time,
+                    total_hours=(datetime.combine(datetime.today(), end_time) - datetime.combine(datetime.today(), start_time)).seconds / 3600
                 )
-                db.session.add(new_schedule)
+                db.session.add(shift)
                 db.session.flush()
 
-                for entry in schedule_data:
-                    emp_id = int(entry["employee_id"])
-                    shift_date = day_map[int(entry["day_index"])]
+                db.session.execute(schedule_shift.insert().values(
+                    schedule_id=new_schedule.schedule_id,
+                    shift_id=shift.shift_id
+                ))
 
-                    shift = Shift(
-                        employee_id=emp_id,
-                        shift_date=shift_date,
-                        start_time=time(9, 0),
-                        end_time=time(17, 0),
-                        total_hours=8
-                    )
-                    db.session.add(shift)
-                    db.session.flush()
+            db.session.commit()
+            return redirect(url_for("manager_createschedule", success="1"))
 
-                    db.session.execute(schedule_shift.insert().values(
-                        schedule_id=new_schedule.schedule_id,
-                        shift_id=shift.shift_id
-                    ))
+        except Exception as e:
+            db.session.rollback()
+            flash("Failed to create schedule. Try again.", "danger")
+            print(f"[ERROR] Schedule creation failed: {e}")
+            return redirect(url_for("manager_createschedule"))
 
-                db.session.commit()
-                return redirect(url_for("manager_createschedule", success="1"))
+    # GET: Display form
+    staff_list = User.query.filter_by(user_type="Service_Staff").order_by(User.employee_id).all()
 
-            except Exception as e:
-                db.session.rollback()
-                flash("Failed to create schedule. Try again.", "danger")
-                return redirect(url_for("manager_createschedule"))
+    # Week starts from the most recent Sunday
+    today = datetime.today().date()
+    start_sunday = today - timedelta(days=today.weekday() + 1) if today.weekday() != 6 else today
+    week_dates = [start_sunday + timedelta(days=i) for i in range(7)]
 
-        staff_list = User.query.filter_by(user_type="Service_Staff").order_by(User.employee_id).all()
+    if request.args.get("success") == "1":
+        flash("Weekly schedule created successfully.", "success")
 
-        if request.args.get("success") == "1":
-            flash("Weekly schedule created successfully.", "success")
-            return render_template("manager_createschedule.html", staff_list=staff_list, success_redirect=True)
+    return render_template("manager_createschedule.html", staff_list=staff_list, week_dates=week_dates)
 
-        return render_template("manager_createschedule.html", staff_list=staff_list)
-
-    return redirect(url_for("manager_login"))
 
 
 
@@ -669,11 +779,12 @@ def staff_createavailability():
 
             Availability.query.filter_by(employee_id=employee_id).delete()
 
-            for day_index, details in data.items():
+            for date_key, details in data.items():
+                date_obj = datetime.strptime(date_key, "%Y-%m-%d").date()
                 for shift in details["shifts"]:
                     availability = Availability(
                         employee_id=employee_id,
-                        day_index=int(day_index),
+                        day_index=date_obj.weekday(),
                         shift_type=shift
                     )
                     db.session.add(availability)
@@ -686,9 +797,10 @@ def staff_createavailability():
             db.session.rollback()
             return jsonify({"error": "Something went wrong."}), 500
 
+    week_dates = get_two_week_dates()
     existing_availability = Availability.query.filter_by(employee_id=employee_id).order_by(Availability.day_index).all()
-    
-    return render_template("staff_createavailability.html", availability=existing_availability)
+
+    return render_template("staff_createavailability.html", availability=existing_availability, week_dates=week_dates)
 
 @app.route("/manager_report_detail")
 def manager_report_detail():
@@ -777,7 +889,36 @@ def manager_viewstaffavailability():
         Availability.shift_type
     ).join(User, Availability.employee_id == User.employee_id).order_by(Availability.employee_id, Availability.day_index).all()
 
-    return render_template("manager_viewstaffavailability.html", records=availability_records)
+    start_date = datetime(2025, 4, 6)  
+    day_index_map = {i: (start_date + timedelta(days=i)).strftime("%A, %B %-d") for i in range(14)}
+
+    shift_hours_map_weekday = {
+        "Morning": "11:00 AM - 3:00 PM",
+        "Afternoon": "3:00 PM - 6:30 PM",
+        "Evening": "6:30 PM - 10:00 PM"
+    }
+    shift_hours_map_weekend = {
+        "Morning": "11:00 AM - 4:00 PM",
+        "Afternoon": "4:00 PM - 8:00 PM",
+        "Evening": "8:00 PM - 12:00 AM"
+    }
+
+    formatted_records = []
+    for record in availability_records:
+        date = start_date + timedelta(days=record.day_index)
+        weekday = date.weekday() 
+        if weekday in [5, 6]:  
+            shift_hours = shift_hours_map_weekend.get(record.shift_type, record.shift_type)
+        else:
+            shift_hours = shift_hours_map_weekday.get(record.shift_type, record.shift_type)
+
+        formatted_records.append({
+            "employee_name": record.employee_name,
+            "date": date.strftime("%A, %B %-d"),
+            "shift_hours": shift_hours
+        })
+
+    return render_template("manager_viewstaffavailability.html", records=formatted_records)
 
 
 @app.route("/clear_availability", methods=["POST"])
