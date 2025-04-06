@@ -16,6 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability, Manager, ServiceStaff, schedule_shift
 
+app = Flask(__name__, static_folder='frontend/static', instance_relative_config=True)
 app = Flask(__name__, instance_relative_config=True)
 def get_two_week_dates():
     today = datetime.today()
