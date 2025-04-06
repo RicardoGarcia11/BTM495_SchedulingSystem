@@ -315,12 +315,7 @@ def manager_createschedule():
 
     return redirect(url_for("manager_login"))
 
-@app.route("/manager_messages", methods=["GET"])
-def manager_messages():
-    if 'logged_in' not in session or session.get('user_type') != 'Manager':
-        return redirect(url_for('login'))
 
-    return render_template("manager_messages.html")
 
 @app.route('/manager_reports')
 def manager_reports():
