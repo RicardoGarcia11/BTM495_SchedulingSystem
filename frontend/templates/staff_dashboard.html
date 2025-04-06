@@ -41,23 +41,31 @@
     <div class="calendar-dates">
       {% set first_day = datetime(year, now.month, 1).weekday() %}
       {% set blanks = (first_day + 6) % 7 %}
+  
       {% for i in range(blanks) %}
-        <div class="calendar-cell"></div>
+        <div class="calendar-cell empty"></div>
       {% endfor %}
-
+  
       {% set num_days = (next_month - now.replace(day=1)).days %}
       {% for day in range(1, num_days + 1) %}
-        {% set is_shift_day = false %}
-        {% for shift in shifts %}
-          {% if shift.shift_date.day == day and shift.shift_date.month == now.month and shift.shift_date.year == year %}
-            {% set is_shift_day = true %}
+        {% set date_obj = datetime(year, now.month, day) %}
+        {% set shift_today = shifts | selectattr("shift_date", "equalto", date_obj.date()) | list %}
+        {% set has_shift = shift_today | length > 0 %}
+        {% set is_today = date_obj.date() == now.date() %}
+  
+        <div class="calendar-cell {% if has_shift %}shift-cell{% endif %} {% if is_today %}today-cell{% endif %}">
+          <div class="day-number">{{ day }}</div>
+  
+          {% if has_shift %}
+            {% for s in shift_today %}
+              <div class="shift-label">
+                🕒 {{ s.start_time.strftime('%H:%M') }} – {{ s.end_time.strftime('%H:%M') }}
+              </div>
+            {% endfor %}
           {% endif %}
-        {% endfor %}
-        <div class="calendar-cell {% if is_shift_day %}shift-day{% endif %}">
-          {{ day }}
         </div>
       {% endfor %}
     </div>
-  </div>
+  </div> 
 </body>
 </html>

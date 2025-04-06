@@ -315,7 +315,6 @@ def manager_requests():
     )
 
 
-
 @app.route("/staff_dashboard")
 def staff_dashboard():
     if 'logged_in' not in session or session.get('user_type') != 'Service_Staff':
@@ -341,8 +340,6 @@ def staff_dashboard():
         next_month=next_month,
         datetime=datetime
     )
-
-
    
 @app.route("/logout")
 def logout():
