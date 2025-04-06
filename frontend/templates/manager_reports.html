@@ -150,69 +150,64 @@
 
   <div class="requests-container">
 
-    <!-- Past Schedules Box -->
-    <div class="request-box">
-      <h3>Past Schedules</h3>
-      <div class="report-list">
-        <div class="report-item">
-          March 2025 - Full Schedule Report <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          February 2025 - Full Schedule Report <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          January 2025 - Full Schedule Report <span class="view-link">View</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Work Hour Logs Box -->
-    <div class="request-box">
-      <h3>Work Hour Logs</h3>
-      <div class="report-list">
-        <div class="report-item">
-          March 2025 - Work Hours Summary <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          February 2025 - Work Hours Summary <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          January 2025 - Work Hours Summary <span class="view-link">View</span>
-        </div>
-      </div>
+<div class="request-box">
+  <h3>Past Schedules</h3>
+  <div class="report-list">
+    {% for month, count in schedules %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Schedule{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
     </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
 
-    <!-- Shift Swaps Box -->
-    <div class="request-box">
-      <h3>Shift Swaps</h3>
-      <div class="report-list">
-        <div class="report-item">
-          March 2025 - 3 Swaps <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          February 2025 - 5 Swaps <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          January 2025 - 2 Swaps <span class="view-link">View</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Time Off Box -->
-    <div class="request-box">
-      <h3>Time Off</h3>
-      <div class="report-list">
-        <div class="report-item">
-          March 2025 - 4 Requests <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          February 2025 - 6 Requests <span class="view-link">View</span>
-        </div>
-        <div class="report-item">
-          January 2025 - 3 Requests <span class="view-link">View</span>
-        </div>
-      </div>
+<div class="request-box">
+  <h3>Work Hour Logs</h3>
+  <div class="report-list">
+    {% for month, total in hours %}
+    <div class="report-item">
+      {{ month }} - {{ total|round(2) }} Hours
+      <span class="view-link">View</span>
     </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="request-box">
+  <h3>Shift Swaps</h3>
+  <div class="report-list">
+    {% for month, count in swaps %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Swap{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="request-box">
+  <h3>Time Off</h3>
+  <div class="report-list">
+    {% for month, count in timeoffs %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Request{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
 
   </div>
 

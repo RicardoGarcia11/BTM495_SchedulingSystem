@@ -8,6 +8,9 @@ import json
 from calendar import monthrange
 from sqlalchemy.exc import SQLAlchemyError
 from flask import Response 
+from collections import defaultdict
+from flask import render_template
+from sqlalchemy import extract, func
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -319,7 +322,45 @@ def manager_createschedule():
 
 @app.route('/manager_reports')
 def manager_reports():
-    return render_template('manager_reports.html')
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for("login"))
+    
+    schedules_by_month = db.session.query(
+        extract('month', Schedule.start_date).label('month'),
+        extract('year', Schedule.start_date).label('year'),
+        func.count(Schedule.schedule_id)
+    ).group_by('year', 'month').order_by('year', 'month').all()
+
+
+    hours_by_month = db.session.query(
+        extract('month', ClockRecord.clockIN_time).label('month'),
+        extract('year', ClockRecord.clockIN_time).label('year'),
+        func.sum(ClockRecord.total_staff_hours)
+    ).group_by('year', 'month').order_by('year', 'month').all()
+
+    swaps_by_month = db.session.query(
+        extract('month', Request.request_date).label('month'),
+        extract('year', Request.request_date).label('year'),
+        func.count(Request.request_id)
+    ).filter(Request.request_type == 'Shift Swap').group_by('year', 'month').order_by('year', 'month').all()
+
+    time_off_by_month = db.session.query(
+        extract('month', Request.request_date).label('month'),
+        extract('year', Request.request_date).label('year'),
+        func.count(Request.request_id)
+    ).filter(Request.request_type == 'Time Off').group_by('year', 'month').order_by('year', 'month').all()
+
+    def format_month(month, year):
+        import calendar
+        return f"{calendar.month_name[int(month)]} {int(year)}"
+
+    return render_template(
+        'manager_reports.html',
+        schedules=[(format_month(m, y), count) for m, y, count in schedules_by_month],
+        hours=[(format_month(m, y), float(hours)) for m, y, hours in hours_by_month],
+        swaps=[(format_month(m, y), count) for m, y, count in swaps_by_month],
+        timeoffs=[(format_month(m, y), count) for m, y, count in time_off_by_month]
+    )
 
 @app.route('/manager_requests')
 def manager_requests():
@@ -427,7 +468,6 @@ def staff_log_hours():
         action = data.get("action")
         now = datetime.now()
 
-        # ✅ Check if hours already logged today
         existing_log = ClockRecord.query.filter(
             ClockRecord.employee_id == employee_id,
             db.func.date(ClockRecord.clockIN_time) == today
@@ -572,14 +612,13 @@ def staff_timeoff():
             )
 
             db.session.add(time_off)
-            db.session.flush()  # So we can get time_off.time_off_id
+            db.session.flush()  
 
-            # Create linked Request entry
             request_entry = Request(
                 employee_id=employee_id,
                 request_type="Time Off",
                 request_date=datetime.utcnow(),
-                time_off_id=time_off.time_off_id,  # ✅ Link to TimeOff
+                time_off_id=time_off.time_off_id, 
                 status="Pending"
             )
 
@@ -651,12 +690,80 @@ def staff_createavailability():
     
     return render_template("staff_createavailability.html", availability=existing_availability)
 
-
 @app.route("/manager_report_detail")
 def manager_report_detail():
+    from calendar import monthrange
+    from datetime import datetime
+    import calendar
+    import re
+    
     section = request.args.get("section", "Unknown Section")
     label = request.args.get("label", "Unknown Report")
-    return render_template("manager_report_detail.html", section=section, label=label)
+    
+    print(f"Received section: {section}, label: {label}")
+
+    first_day = None
+    last_day = None
+    
+    try:
+    
+        match = re.match(r"(\w+)\s+(\d{4})", label)
+        if match:
+            month_str = match.group(1)  
+            year_str = match.group(2)  
+            
+            month = list(calendar.month_name).index(month_str)
+            year = int(year_str)
+            
+            if month > 0 and 1 <= month <= 12:  
+                first_day = datetime(year, month, 1).date()
+                last_day = datetime(year, month, monthrange(year, month)[1]).date()
+                print(f"Date range: {first_day} to {last_day}")
+            else:
+                print(f"Invalid month: {month}")
+        else:
+            print(f"Could not extract month and year from label: {label}")
+    except Exception as e:
+        print(f"Date parsing failed: {e}")
+    
+    data = []
+
+    if first_day and last_day:
+        if section == "Past Schedules":
+            data = Schedule.query.filter(Schedule.start_date.between(first_day, last_day)).all()
+        elif section == "Work Hour Logs":
+            data = ClockRecord.query.filter(
+                db.func.date(ClockRecord.clockIN_time).between(first_day, last_day)
+            ).all()
+        elif section == "Shift Swaps":
+            data = Request.query.filter(
+                Request.request_type == 'Shift Swap',
+                Request.request_date.between(first_day, last_day)
+            ).all()
+        elif section == "Time Off":
+            data = Request.query.filter(
+                Request.request_type == 'Time Off',
+                Request.request_date.between(first_day, last_day)
+            ).all()
+    
+    print(f"Query returned {len(data)} results for {section}")
+    
+    if len(data) == 0:
+        print("Checking for any data without date filters...")
+        if section == "Past Schedules":
+            all_data = Schedule.query.limit(5).all()
+        elif section == "Work Hour Logs":
+            all_data = ClockRecord.query.limit(5).all()
+        elif section == "Shift Swaps":
+            all_data = Request.query.filter(Request.request_type == 'Shift Swap').limit(5).all()
+        elif section == "Time Off":
+            all_data = Request.query.filter(Request.request_type == 'Time Off').limit(5).all()
+        else:
+            all_data = []
+            
+        print(f"Found {len(all_data)} records without date filters")
+    
+    return render_template("manager_report_detail.html", section=section, label=label, data=data)
 
 @app.route("/manager_viewstaffavailability")
 def manager_viewstaffavailability():

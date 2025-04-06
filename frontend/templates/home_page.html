@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scheduling App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/homepage.css') }}"> <!--flask reference to styling-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/homepage.css') }}"> 
 
 </head>
 <body>
     <header>
-        <h1>Scheduling App</h1>
+        <h1>SHIFTLY</h1>
     </header>
     <div class="container">
         <h2>Manage Your Schedule Efficiently</h2>
-        <p>Book, track, and organize your tasks easily.</p>
+        <p>Book, track, and organize your work shifts easily.</p>
         <a href="{{ url_for('signup') }}" class="btn">Sign Up</a>
         <a href="{{ url_for('login') }}" class="btn">Login</a>
         <a href="{{ url_for('manager_login') }}" class="btn"> Manager Portal</a>

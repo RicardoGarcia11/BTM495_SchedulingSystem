@@ -1,13 +1,254 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Report Detail</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7fa;
+    }
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      transition: background-color 0.3s ease;
+      border-radius: 4px;
+    }
+    nav ul li a:hover,
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      z-index: 1;
+      border-radius: 4px;
+    }
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 16px;
+      font-weight: bold;
+    }
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    .container {
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 24px;
+      color: #333;
+    }
+    .back-link {
+      text-decoration: none;
+      color: #8e44ec;
+      font-weight: bold;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .data-table th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    .data-table tr:hover {
+      background-color: #f9f9f9;
+    }
+    .no-data {
+      padding: 30px;
+      text-align: center;
+      background-color: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body>
-  <h1>{{ section }} Report</h1>
-  <h2>{{ label }}</h2>
-  <p>This is a placeholder for the detailed report view.</p>
-  <a href="{{ url_for('manager_reports') }}">Back to Reports</a>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}" class="active">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header">
+      <h1>{{ section }}: {{ label }}</h1>
+      <a href="{{ url_for('manager_reports') }}" class="back-link">Back to Reports</a>
+    </div>
+
+    {% if data %}
+      {% if section == "Past Schedules" %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Schedule ID</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Total Hours</th>
+              <th>Manager</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for schedule in data %}
+              <tr>
+                <td>{{ schedule.schedule_id }}</td>
+                <td>{{ schedule.start_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ schedule.end_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ schedule.total_hours }}</td>
+                <td>{{ schedule.manager_id }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      
+      {% elif section == "Work Hour Logs" %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Total Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in data %}
+              <tr>
+                <td>{{ record.employee_id }}</td>
+                <td>{{ record.clockIN_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ record.clockOUT_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ record.total_staff_hours }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      
+      {% elif section == "Shift Swaps" %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Employee ID</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Requested Shift</th>
+              <th>Target Shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for request in data %}
+              <tr>
+                <td>{{ request.request_id }}</td>
+                <td>{{ request.employee_id }}</td>
+                <td>{{ request.request_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ request.status }}</td>
+                <td>{{ request.requested_shift_id }}</td>
+                <td>{{ request.target_shift_id }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      
+      {% elif section == "Time Off" %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Employee ID</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Time Off ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for request in data %}
+              <tr>
+                <td>{{ request.request_id }}</td>
+                <td>{{ request.employee_id }}</td>
+                <td>{{ request.request_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ request.status }}</td>
+                <td>{{ request.time_off_id }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% else %}
+      <div class="no-data">
+        <p>No data available for this report.</p>
+      </div>
+    {% endif %}
+  </div>
 </body>
 </html>
