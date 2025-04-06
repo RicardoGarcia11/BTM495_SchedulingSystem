@@ -1,0 +1,11 @@
+Service Staff signs in.
+Service Staff clicks on “Create Availability” button.
+System displays the current week calendar.
+Service Staff inputs their availability on the calendar.
+Service Staff submits the finalized availability.
+System saves the availability and provides a confirmation message.
+System sends the finalized availability to the manager.
+
+Alternate/Exceptional Flows:
+5a. If there are already 5 employees on the same shift, the system displays an error message.
+5b. Service Staff chooses an alternative shift.

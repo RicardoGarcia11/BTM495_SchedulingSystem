@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Messages</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffmessages.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .main-container {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 300px;
+      background-color: #f5f5f5;
+      padding: 10px;
+    }
+
+    .chat-window {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .chat-input {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+
+    .chat-input button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background-color: #a855f7;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .message {
+      padding: 8px 12px;
+      margin: 6px 0;
+      border-radius: 12px;
+      max-width: 70%;
+    }
+
+    .message.sent {
+      background-color: #a855f7;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .message.received {
+      background-color: #e5e5e5;
+      align-self: flex-start;
+    }
+
+    .search-box {
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 5px;
+    }
+
+    .search-box button {
+      width: 100%;
+      background-color: #9333ea;
+      color: white;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .contact-item {
+      background: #e0e0e0;
+      padding: 8px;
+      border-radius: 6px;
+      margin: 4px 0;
+      cursor: pointer;
+    }
+
+    .contact-item.active {
+      background: #c084fc;
+      font-weight: bold;
+      color: white;
+    }
+
+    .placeholder {
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_createavailability') }}">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}" class="active">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="/logout">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="search-box">
+        <input type="text" id="email-search" placeholder="Enter email to start chat...">
+        <button onclick="startNewChat()">Start Chat</button>
+      </div>
+
+      <h3>Contacts</h3>
+      <div class="contact-list" id="contact-list">
+        {% for user in users %}
+          <div class="contact-item" onclick="selectChat(this)" data-id="{{ user.employee_id }}">
+            {{ user.email }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="chat-window">
+      <div class="chat-header">
+        <strong id="chat-title">Start chatting with ...</strong>
+      </div>
+
+      <div class="chat-body" id="chat-body">
+        <div class="placeholder">No conversation selected</div>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Type your message here...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentChat = null;
+    let currentChatId = null;
+
+    function selectChat(element) {
+      document.querySelectorAll('.contact-item').forEach(item =>
+        item.classList.remove('active')
+      );
+      element.classList.add('active');
+
+      currentChat = element.innerText;
+      currentChatId = element.getAttribute('data-id');
+      document.getElementById("chat-title").innerText = currentChat;
+
+      loadChatHistory(currentChatId);
+    }
+
+    function startNewChat() {
+      const email = document.getElementById("email-search").value.trim();
+      if (!email) return alert("Enter an email to start chat.");
+
+      fetch(`/lookup_user_by_email?email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            currentChatId = data.employee_id;
+            currentChat = email;
+            document.getElementById("chat-title").innerText = currentChat;
+            document.getElementById("chat-body").innerHTML = '';
+            loadChatHistory(currentChatId);
+
+            const exists = [...document.querySelectorAll('.contact-item')].some(item =>
+              item.getAttribute('data-id') === currentChatId
+            );
+            if (!exists) {
+              const newItem = document.createElement("div");
+              newItem.className = "contact-item active";
+              newItem.textContent = email;
+              newItem.setAttribute("data-id", currentChatId);
+              newItem.onclick = () => selectChat(newItem);
+              document.getElementById("contact-list").appendChild(newItem);
+            }
+          }
+        });
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("message-input");
+      const text = input.value.trim();
+
+      if (text && currentChatId) {
+        fetch("/send_message", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: `recipient_id=${encodeURIComponent(currentChatId)}&message_text=${encodeURIComponent(text)}`
+        }).then(res => {
+          if (res.ok) {
+            const chatBody = document.getElementById("chat-body");
+            const message = document.createElement("div");
+            message.className = "message sent";
+            message.textContent = text;
+            chatBody.appendChild(message);
+            input.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+          } else {
+            alert("Message failed to send.");
+          }
+        });
+      }
+    }
+
+    function loadChatHistory(recipient_id) {
+      fetch(`/load_chat_history?recipient_id=${encodeURIComponent(recipient_id)}`)
+        .then(res => res.json())
+        .then(data => {
+          const chatBody = document.getElementById("chat-body");
+          chatBody.innerHTML = "";
+
+          data.messages.forEach(msg => {
+            const div = document.createElement("div");
+            div.className = `message ${msg.sent_by_me ? "sent" : "received"}`;
+            div.textContent = msg.message_text;
+            chatBody.appendChild(div);
+          });
+
+          chatBody.scrollTop = chatBody.scrollHeight;
+        });
+    }
+  </script>
+</body>
+</html>

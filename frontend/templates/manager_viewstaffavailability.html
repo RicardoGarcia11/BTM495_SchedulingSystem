@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manager - View Availability</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/managercreateschedule.css') }}">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .schedule-container {
+      margin: 60px auto;
+      max-width: 1000px;
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #8e44ec;
+      font-weight: 700;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .filters input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      width: 48%;
+    }
+
+    .export-button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+      border: 1px solid #8e44ec;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .schedule-table th {
+      background-color: #f3e8ff;
+      font-weight: 700;
+    }
+
+    .schedule-table tr:nth-child(even) {
+      background-color: #fcf9ff;
+    }
+
+    .schedule-table tr:hover {
+      background-color: #f0eaff;
+    }
+
+    .back-button {
+      display: block;
+      margin: 40px auto 0;
+      background-color: #8e44ec;
+      color: white;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #6c2cb3;
+    }
+  </style>
+</head>
+<body>
+    <nav>
+        <ul>
+          <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+          <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+          <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+          <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+          <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+          <li><a href="{{ url_for('manager_viewstaffavailability') }}"class="active">STAFF AVAILABILITY</a></li>
+        </ul>
+        <div class="dropdown">
+          <div class="dropdown-toggle">Manager</div>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('logout') }}">LOG OUT</a>
+          </div>
+        </div>
+      </nav>
+
+  <div class="schedule-container">
+    <h2>Staff Availability</h2>
+
+    <div class="filters">
+      <input type="text" id="nameFilter" placeholder="Search by employee name...">
+      <input type="text" id="dateFilter" placeholder="Search by date (e.g. April 2)...">
+    </div>
+
+    <button class="export-button" onclick="exportToCSV()">Download CSV</button>
+
+    {% if records %}
+      <table class="schedule-table" id="availabilityTable">
+        <thead>
+          <tr>
+            <th>Employee Name</th>
+            <th>Date</th>
+            <th>Shift Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set day_labels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %}
+          {% set month = "April" %}
+          {% for record in records %}
+            {% set date_str = month ~ ' ' ~ record.day_index %}
+            {% set weekday = day_labels[(record.day_index - 1) % 7] %}
+            {% set full_date = weekday ~ ', ' ~ date_str %}
+
+            {% if record.shift_type == 'Afternoon' %}
+              {% set shift_hours = "11:00 AM – 5:00 PM" %}
+            {% elif record.shift_type == 'Evening' %}
+              {% set shift_hours = "5:00 PM – 11:00 PM" %}
+            {% elif record.shift_type == 'Full Day' %}
+              {% set shift_hours = "3:00 PM – 11:00 PM" %}
+            {% else %}
+              {% set shift_hours = record.shift_type %}
+            {% endif %}
+
+            <tr>
+              <td>{{ record.employee_name }}</td>
+              <td>{{ full_date }}</td>
+              <td>{{ shift_hours }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="text-align: center; font-weight: bold;">No availability submitted yet.</p>
+    {% endif %}
+
+    <a href="{{ url_for('manager_dashboard') }}" class="back-button">&larr; Back to Dashboard</a>
+  </div>
+
+  <script>
+    const nameInput = document.getElementById("nameFilter");
+    const dateInput = document.getElementById("dateFilter");
+
+    nameInput.addEventListener("input", filterTable);
+    dateInput.addEventListener("input", filterTable);
+
+    function filterTable() {
+      const name = nameInput.value.toLowerCase();
+      const date = dateInput.value.toLowerCase();
+      const rows = document.querySelectorAll("#availabilityTable tbody tr");
+
+      rows.forEach(row => {
+        const nameCell = row.cells[0].textContent.toLowerCase();
+        const dateCell = row.cells[1].textContent.toLowerCase();
+
+        const nameMatch = nameCell.includes(name);
+        const dateMatch = dateCell.includes(date);
+
+        row.style.display = nameMatch && dateMatch ? "" : "none";
+      });
+    }
+
+    function exportToCSV() {
+      const rows = document.querySelectorAll("#availabilityTable tr");
+      let csv = [];
+      rows.forEach(row => {
+        const cols = row.querySelectorAll("td, th");
+        const rowData = Array.from(cols).map(col => '"' + col.innerText.replace(/"/g, '""') + '"');
+        csv.push(rowData.join(","));
+      });
+
+      const csvContent = csv.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "staff_availability.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

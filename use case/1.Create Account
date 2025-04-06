@@ -1,0 +1,18 @@
+User opens the application.
+System displays the starting screen.
+User clicks on "Create an Account" button.
+System displays the “Create Account” form.
+User inputs their email.
+System verifies that the email is valid.
+System asks the user to create a password.
+User inputs a password twice.
+System verifies if the passwords match.
+User selects the “Create Account” button.
+System generates a 3-digit ID number for the user.
+System displays the ID number on the screen.
+Users click “OK” to confirm the ID number.
+System saves the new account data to the database.
+
+Alternate/Exceptional Flows:
+6a. If the email is not valid or already in use, the system provides an error message.
+8a. If the passwords don’t match, the system provides an error message.

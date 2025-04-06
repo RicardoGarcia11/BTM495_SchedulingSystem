@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Schedule</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffdashboard.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .shift-day {
+      background-color: #673ab7;
+      color: white;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}" class="active">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_createavailability') }}">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="calendar-container">
+    <div class="calendar-title">{{ month_name }} {{ year }}</div>
+    <div class="calendar-days">
+      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+    </div>
+    <div class="calendar-dates">
+      {% set month_start = datetime(year, now.month, 1) %}
+      {% set first_day = month_start.weekday() %}
+      {% set blanks = first_day %}
+  
+      {% for i in range(blanks) %}
+        <div class="calendar-cell empty"></div>
+      {% endfor %}
+  
+      {% set num_days = (next_month - now.replace(day=1)).days %}
+      {% for day in range(1, num_days + 1) %}
+        {% set date_obj = datetime(year, now.month, day) %}
+        {% set shift_today = shifts | selectattr("shift_date", "equalto", date_obj.date()) | list %}
+        {% set has_shift = shift_today | length > 0 %}
+        {% set is_today = date_obj.date() == now.date() %}
+  
+        <div class="calendar-cell {% if has_shift %}shift-cell{% endif %} {% if is_today %}today-cell{% endif %}">
+          <div class="day-number">{{ day }}</div>
+  
+          {% if has_shift %}
+            {% for s in shift_today %}
+              <div class="shift-label">
+                🕒 {{ s.start_time.strftime('%H:%M') }} – {{ s.end_time.strftime('%H:%M') }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div> 
+</body>
+</html>

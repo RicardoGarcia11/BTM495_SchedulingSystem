@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Dashboard - Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7fa;
+    }
+    nav {
+      background-color: #8e44ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      transition: background-color 0.3s ease;
+      border-radius: 4px;
+    }
+    nav ul li a:hover,
+    nav ul li a.active {
+      background-color: #5a005a;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #8e44ec;
+      min-width: 140px;
+      z-index: 1;
+      border-radius: 4px;
+    }
+    .dropdown-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 16px;
+      font-weight: bold;
+    }
+    .dropdown-menu a:hover {
+      background-color: #5a005a;
+    }
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    .requests-container {
+      padding: 40px 20px;
+      margin-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .request-box {
+      background-color: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      flex: 1 1 calc(50% - 40px);
+      min-width: 260px;
+    }
+
+    .request-box h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 250px;
+      overflow-y: auto;
+      text-align: left;
+      padding-right: 5px;
+    }
+
+    .report-item {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-item .view-link {
+      color: #007bff;
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}"class="active">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+  </nav>
+
+  <div class="requests-container">
+
+
+<div class="request-box">
+  <h3>Past Schedules</h3>
+  <div class="report-list">
+    {% for month, count in schedules %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Schedule{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="request-box">
+  <h3>Work Hour Logs</h3>
+  <div class="report-list">
+    {% for month, total in hours %}
+    <div class="report-item">
+      {{ month }} - {{ total|round(2) }} Hours
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="request-box">
+  <h3>Shift Swaps</h3>
+  <div class="report-list">
+    {% for month, count in swaps %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Swap{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="request-box">
+  <h3>Time Off</h3>
+  <div class="report-list">
+    {% for month, count in timeoffs %}
+    <div class="report-item">
+      {{ month }} - {{ count }} Request{{ 's' if count > 1 else '' }}
+      <span class="view-link">View</span>
+    </div>
+    {% else %}
+    <div class="report-item">No data</div>
+    {% endfor %}
+  </div>
+</div>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('.view-link').forEach((link, index) => {
+      link.addEventListener('click', () => {
+        const section = link.closest('.request-box').querySelector('h3').innerText;
+        const label = link.parentElement.innerText.split('View')[0].trim();
+        
+        const encodedSection = encodeURIComponent(section);
+        const encodedLabel = encodeURIComponent(label);
+  
+        window.location.href = `/manager_report_detail?section=${encodedSection}&label=${encodedLabel}`;
+      });
+    });
+  </script>  
+</body>
+</html>

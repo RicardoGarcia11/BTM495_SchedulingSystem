@@ -1,0 +1,17 @@
+Service Staff signs in.
+Service Staff clicks on “Request Swap” button.
+System displays the current week schedule.
+Service Staff selects the shift that they want to swap.
+System displays a list of employees on that shift.
+Service Staff selects the person to swap. 
+Service Staff submits the requests to the selected employee.
+System sends a notification to the selected employee.
+Selected employee approves the request.
+System sends the confirmation to the staff.
+System updates the swap into the schedule.
+
+**Assumptions**
+The Service Staff who wants to shiftswap contacts the manager prior to officialy sending the request.
+Therefore, there is no need to notify the manager when the request has been submitted.
+This process is only to help the manager from the hassle of writing everything down in paper 
+and the shifts and hours are automatically updated.

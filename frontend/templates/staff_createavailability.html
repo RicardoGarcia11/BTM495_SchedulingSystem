@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard - Create Availability</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffcreateavailability.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+.flash {
+  padding: 10px;
+  margin: 20px auto;
+  width: 60%;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.flash.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+#toggleAvailabilityBtn {
+  background-color: #6a0dad;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  margin: 20px auto 10px;
+  display: block;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease;
+}
+
+#toggleAvailabilityBtn:hover {
+  background-color: #5800b0;
+}
+
+
+#availabilityPanel {
+  margin-bottom: 20px;
+}
+
+.saved-availability {
+  background-color: #f5f5ff;
+  border: 1px solid #cfcfff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  width: 300px;
+  margin: 30px auto;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+.saved-availability h3 {
+  color: #6a0dad;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.saved-availability ul {
+  padding-left: 20px;
+  margin-top: 6px;
+}
+.saved-availability li {
+  margin: 2px 0;
+}
+
+.summary-box {
+    width: 60%;
+    margin: 20px auto 10px;
+    border: 2px solid #a97aff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 14px;
+    background-color: #fafafa;
+  }
+
+  .summary-entry {
+    margin-bottom: 6px;
+  }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_createavailability') }}" class="active">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="calendar-wrapper">
+      <div class="calendar-container">
+        <div class="calendar-label">Select Day:</div>
+        <div class="calendar-title">Week of Mar 31 – Apr 6, 2025</div>
+        <div class="calendar-days">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div class="calendar-dates">
+          <div class="calendar-cell">31</div>
+          <div class="calendar-cell">1</div>
+          <div class="calendar-cell">2</div>
+          <div class="calendar-cell">3</div>
+          <div class="calendar-cell">4</div>
+          <div class="calendar-cell">5</div>
+          <div class="calendar-cell">6</div>
+        </div>
+      </div>
+
+      <div class="swap-panel">
+        <div class="calendar-label">Select Hours:</div>
+        <div class="swap-title">Shifts</div>
+        <div id="shift-list"></div>
+      </div>
+    </div>
+
+    <div class="summary-box" id="summary-box">
+      <h3>Selected Availability</h3>
+    </div>
+
+    <button class="submit-button">Submit</button>
+
+    <button id="toggleAvailabilityBtn" style="margin: 12px auto 8px; display: block; background-color: #6a0dad; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+      Show My Availability ⬇
+    </button>
+
+    <div id="availabilityPanel" class="saved-availability" style="display: none;">
+      <h3>🗂️ Your Submitted Availability:</h3>
+      {% if availability %}
+        <ul>
+          {% for item in availability %}
+            <li>Day {{ item.day_index }} — {{ item.shift_type }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>You haven’t submitted any availability yet.</p>
+      {% endif %}
+    
+      <form id="clearAvailabilityForm" style="margin-top: 10px;">
+        <button type="submit" style="background-color: #e74c3c; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+          🗑 Clear My Availability
+        </button>
+      </form>  
+    </div>   
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-button" style="margin-top: 0;">← Back to Dashboard</a>
+  </div> 
+
+  <script>
+    const shifts = [
+      { time: '11:00 AM - 5:00 PM', label: 'Afternoon' },
+      { time: '5:00 PM - 11:00 PM', label: 'Evening' },
+      { time: '3:00 PM - 11:00 PM', label: 'Full Day' }
+    ];
+    const dayMap = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const selectedShiftsByDay = {};
+
+    function handleAdd(button, shiftLabel, time) {
+      const selectedCell = document.querySelector('.calendar-cell.selected');
+      if (!selectedCell) return;
+
+      const cellIndex = [...selectedCell.parentNode.children].indexOf(selectedCell);
+      const dayName = dayMap[cellIndex];
+      const dayNum = selectedCell.textContent.trim();
+      const fullDate = `April ${dayNum} - ${dayName}`;
+
+      if (!selectedShiftsByDay[dayNum]) {
+        selectedShiftsByDay[dayNum] = {
+          label: fullDate,
+          shifts: []
+        };
+      }
+
+      if (!selectedShiftsByDay[dayNum].shifts.includes(shiftLabel)) {
+        selectedShiftsByDay[dayNum].shifts.push(shiftLabel);
+        button.classList.add('added');
+        button.textContent = 'Undo';
+        applyConflictLogic(shiftLabel);
+      } else {
+        selectedShiftsByDay[dayNum].shifts = selectedShiftsByDay[dayNum].shifts.filter(s => s !== shiftLabel);
+        button.classList.remove('added');
+        button.textContent = 'Add';
+        clearConflictDisables();
+      }
+
+      renderSummary();
+    }
+
+    function applyConflictLogic(addedLabel) {
+      const buttons = document.querySelectorAll('#shift-list .add-button:not(.added)');
+      if (addedLabel === 'Afternoon' || addedLabel === 'Evening') {
+        buttons.forEach(btn => {
+          const shiftText = btn.previousSibling.textContent;
+          if (shiftText === '3:00 PM - 11:00 PM') {
+            btn.classList.add('disabled');
+            btn.disabled = true;
+          }
+        });
+      }
+      if (addedLabel === 'Full Day') {
+        buttons.forEach(btn => {
+          const shiftText = btn.previousSibling.textContent;
+          if (shiftText === '11:00 AM - 5:00 PM' || shiftText === '5:00 PM - 11:00 PM') {
+            btn.classList.add('disabled');
+            btn.disabled = true;
+          }
+        });
+      }
+    }
+
+    function clearConflictDisables() {
+      const buttons = document.querySelectorAll('#shift-list .add-button.disabled');
+      buttons.forEach(btn => {
+        btn.classList.remove('disabled');
+        btn.disabled = false;
+      });
+    }
+
+    function renderSummary() {
+      const summaryBox = document.getElementById('summary-box');
+      summaryBox.innerHTML = '<h3>Selected Availability</h3>';
+
+      for (const day in selectedShiftsByDay) {
+        if (selectedShiftsByDay[day].shifts.length === 0) continue;
+        const entry = document.createElement('div');
+        entry.className = 'summary-entry';
+
+        const header = `<strong>${selectedShiftsByDay[day].label}</strong>`;
+        const shiftLabels = selectedShiftsByDay[day].shifts.join(', ');
+
+        entry.innerHTML = `${header}<br>${shiftLabels}`;
+        summaryBox.appendChild(entry);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const calendarCells = document.querySelectorAll('.calendar-cell');
+      const shiftList = document.getElementById('shift-list');
+
+      calendarCells.forEach(cell => {
+        if (cell.textContent.trim() !== '') {
+          cell.addEventListener('click', () => {
+            calendarCells.forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+
+            shiftList.innerHTML = '';
+            shifts.forEach(shift => {
+              const block = document.createElement('div');
+              block.classList.add('shift-block');
+
+              const time = document.createElement('div');
+              time.classList.add('shift-time');
+              time.textContent = shift.time;
+
+              const btn = document.createElement('button');
+              btn.classList.add('add-button');
+              btn.textContent = 'Add';
+              btn.onclick = () => handleAdd(btn, shift.label, shift.time);
+
+              block.appendChild(time);
+              block.appendChild(btn);
+              shiftList.appendChild(block);
+            });
+          });
+        }
+      });
+      
+      document.querySelector('.submit-button').addEventListener('click', () => {
+  
+  const monthMap = {
+    "January": "01",
+    "February": "02",
+    "March": "03",
+    "April": "04",
+    "May": "05",
+    "June": "06",
+    "July": "07",
+    "August": "08",
+    "September": "09",
+    "October": "10",
+    "November": "11",
+    "December": "12",
+  };
+
+  function isValidDate(month, day) {
+    const testDate = new Date(`2025-${month}-${day}`);
+    return testDate.getMonth() + 1 === parseInt(month);
+  }
+
+  for (const key in selectedShiftsByDay) {
+    const entry = selectedShiftsByDay[key];
+    const label = entry.label;
+    
+    const parts = label.split(" ");
+    const monthName = parts[0];
+    const dayNumber = parseInt(parts[1]);
+
+    const month = monthMap[monthName];
+
+    if (!isValidDate(month, dayNumber)) {
+      alert(`⚠️ Invalid date: ${label}`);
+      return; 
+    }
+  }
+
+  
+  fetch("/staff_createavailability", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(selectedShiftsByDay)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Network response was not ok.");
+    return response.json();
+  })
+  .then(data => {
+    
+    const flash = document.createElement('div');
+    flash.className = 'flash success';
+    flash.innerText = data.message || "Availability submitted successfully!";
+    document.body.prepend(flash);
+
+    setTimeout(() => {
+      window.location.href = "/staff_dashboard";
+    }, 3000);
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert("Failed to submit availability.");
+  });
+});
+    }); 
+
+    document.getElementById("clearAvailabilityForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (!confirm("Are you sure you want to clear your availability?")) return;
+
+      fetch("/clear_availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to clear availability.");
+          return response.json();
+        })
+        .then(data => {
+          alert(data.message || "Availability cleared.");
+          location.reload();  // Refresh page to reflect cleared state
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Something went wrong.");
+        });
+    });
+
+    document.getElementById("toggleAvailabilityBtn").addEventListener("click", function () {
+      const panel = document.getElementById("availabilityPanel");
+      const isVisible = panel.style.display === "block";
+      
+      panel.style.display = isVisible ? "none" : "block";
+      this.textContent = isVisible ? "Show My Availability ⬇" : "Hide My Availability ⬆";
+    });
+
+  </script>
+</body>
+</html>

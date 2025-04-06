@@ -1,0 +1,143 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+  }
+
+  nav {
+    background-color: #8e44ec;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    padding: 0 20px;
+  }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+  }
+
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 14px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  nav ul li a:hover,
+  nav ul li a.active {
+    background-color: #5a005a;
+  }
+
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown-toggle {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #8e44ec;
+    min-width: 140px;
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .dropdown-menu a {
+    display: block;
+    color: white;
+    padding: 12px 16px;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  .dropdown-menu a:hover {
+    background-color: #5a005a;
+  }
+
+  .dropdown:hover .dropdown-menu {
+    display: block;
+  }
+
+  .calendar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .calendar-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .calendar-days,
+  .calendar-dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .calendar-days div {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 0;
+  }
+
+  .calendar-cell {
+    background-color: white;
+    padding: 15px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 16px;
+  }
+
+  .calendar-cell:hover {
+    background-color: #8e44ec;
+    color: white;
+    transform: scale(1.05);
+  }
+
+  .today-cell {
+    background-color: #9575cd;
+    color: #fff;
+    font-weight: bold;
+    border: 2px solid #5e35b1;
+  }
+  
+  .shift-cell {
+    background-color: #a5d6a7;
+    border: 2px solid #388e3c;
+    font-weight: bold;
+  }
+  
+  .shift-label {
+    font-size: 11px;
+    margin-top: 4px;
+    color: #1b5e20;
+  }
+  

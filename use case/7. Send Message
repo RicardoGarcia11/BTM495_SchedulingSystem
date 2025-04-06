@@ -1,0 +1,13 @@
+User signs in.
+User selects the “Send Messages” button.
+System displays a list of all employees.
+User selects the recipient.
+User types in the message.
+User clicks “Enter” to send the message.
+System notifies the recipient.
+
+SubFlows
+S-4a: If there is no previous chat history, the system creates a new chat thread.
+S-4b: If there is an existing chat thread, the system displays the chat history.
+
+

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Log Hours</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffloghours.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .no-shift-msg {
+      margin: 50px auto;
+      padding: 20px;
+      max-width: 500px;
+      background-color: #ffecec;
+      color: #b30000;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #f5c2c2;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_createavailability') }}">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}" class="active">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="log-hours-container">
+    {% if shift %}
+      <div class="log-box">
+        <h2>My Shift</h2>
+        <div class="shift-info">
+          <h3>{{ shift.start_time.strftime('%I:%M %p') }} – {{ shift.end_time.strftime('%I:%M %p') }}</h3>
+          <p>{{ shift.shift_date.strftime('%A, %b %d, %Y') }}</p>
+          <p>Service Staff</p>
+        </div>
+        <div class="time-display" id="currentTime"></div>
+        <div class="buttons">
+          <button id="clockInBtn" class="clock-btn">Clock In</button>
+          <button id="clockOutBtn" class="clock-btn">Clock Out</button>
+        </div>
+        <div id="lastLogTime"></div>
+      </div>
+    {% else %}
+      <div class="no-shift-msg">
+        You have no shift assigned today. Please check your schedule or contact your manager.
+      </div>
+    {% endif %}
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+  </div>
+
+  {% if shift %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const clockInBtn = document.getElementById('clockInBtn');
+      const clockOutBtn = document.getElementById('clockOutBtn');
+      const timeEl = document.getElementById('currentTime');
+      const lastLogEl = document.getElementById('lastLogTime');
+      let clockedIn = sessionStorage.getItem("clockedIn") === "true";
+
+      function updateTime() {
+        const now = new Date();
+        timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      function updateButtonStates() {
+        clockInBtn.disabled = clockedIn;
+        clockOutBtn.disabled = !clockedIn;
+        clockInBtn.classList.toggle('active', clockedIn);
+        clockOutBtn.classList.toggle('active', !clockedIn);
+      }
+
+      function sendClockAction(action) {
+        fetch('/staff_loghours', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        })
+        .then(res => res.json())
+        .then(data => {
+          const message = data.message || data.error || "Action completed.";
+          lastLogEl.textContent = message;
+
+          if (data.error) return;
+
+          if (action === 'clock_in') {
+            clockedIn = true;
+            sessionStorage.setItem("clockedIn", "true");
+          } else if (action === 'clock_out') {
+            clockedIn = false;
+            sessionStorage.setItem("clockedIn", "false");
+            clockInBtn.disabled = true;
+            clockOutBtn.disabled = true;
+            setTimeout(() => {
+              window.location.href = "/staff_dashboard";
+            }, 2000);
+          }
+
+          updateButtonStates();
+        })
+        .catch(error => {
+          lastLogEl.textContent = "Error logging hours.";
+          console.error(error);
+        });
+      }
+
+      clockInBtn.addEventListener('click', () => sendClockAction('clock_in'));
+      clockOutBtn.addEventListener('click', () => sendClockAction('clock_out'));
+
+      updateTime();
+      setInterval(updateTime, 1000);
+      updateButtonStates();
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

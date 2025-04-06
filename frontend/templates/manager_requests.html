@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Dashboard - Requests</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/managerrequests.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}" class="active">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="requests-container">
+
+    <!-- SHIFT SWAP REQUESTS -->
+    <div class="request-box">
+      <h3>Shift Swap Requests</h3>
+      <div class="employee-list">
+        {% for req in swap_requests %}
+          <div class="employee" id="request_{{ req.request_id }}">
+            <div class="employee-info">
+              <span>{{ req.requester_name }} ↔ {{ req.swap_with_name }}</span>
+              <span>Request Date - {{ req.request_date.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="buttons">
+              <button class="action-btn approve" id="approve_{{ req.request_id }}" onclick="handleApprove(this, 'deny_{{ req.request_id }}', 'request_{{ req.request_id }}')">Approve</button>
+              <button class="action-btn deny" id="deny_{{ req.request_id }}" onclick="handleDeny(this, 'approve_{{ req.request_id }}', 'request_{{ req.request_id }}')">Deny</button>
+              <span class="view-details" onclick="viewDetails()">View Details</span>
+            </div>
+          </div>
+        {% else %}
+          <p style="text-align:center; font-weight:bold;">No shift swap requests.</p>
+        {% endfor %}
+      </div>
+      <div class="footer-buttons">
+        <button class="reset-btn" onclick="resetButtons(this)">Reset</button>
+        <button class="submit-btn" onclick="submitRequest(this)">Submit</button>
+      </div>
+    </div>
+
+    <!-- TIME OFF REQUESTS -->
+    <div class="request-box">
+      <h3>Time Off Requests</h3>
+      <div class="employee-list">
+        {% for req in time_off_requests %}
+          <div class="employee" id="timeoff_{{ req.request_id }}">
+            <div class="employee-info">
+              <span>{{ req.requester_name }}</span>
+              <span>Request Date - {{ req.request_date.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="buttons">
+              <button class="action-btn approve" id="approve_timeoff_{{ req.request_id }}" onclick="handleApprove(this, 'deny_timeoff_{{ req.request_id }}', 'timeoff_{{ req.request_id }}')">Approve</button>
+              <button class="action-btn deny" id="deny_timeoff_{{ req.request_id }}" onclick="handleDeny(this, 'approve_timeoff_{{ req.request_id }}', 'timeoff_{{ req.request_id }}')">Deny</button>
+              <span class="view-details" onclick="viewDetails()">View Details</span>
+            </div>
+          </div>
+        {% else %}
+          <p style="text-align:center; font-weight:bold;">No time off requests.</p>
+        {% endfor %}
+      </div>
+      <div class="footer-buttons">
+        <button class="reset-btn" onclick="resetButtons(this)">Reset</button>
+        <button class="submit-btn" onclick="submitRequest(this)">Submit</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function handleApprove(button, denyId, employeeId) {
+      const approveBtn = button;
+      const denyBtn = document.getElementById(denyId);
+      const employee = document.getElementById(employeeId);
+
+      approveBtn.classList.add('clicked');
+      approveBtn.innerHTML = '&#10003;';
+      approveBtn.style.backgroundColor = '#28a745';
+
+      denyBtn.disabled = true;
+      employee.setAttribute('data-status', 'approved');
+    }
+
+    function handleDeny(button, approveId, employeeId) {
+      const denyBtn = button;
+      const approveBtn = document.getElementById(approveId);
+      const employee = document.getElementById(employeeId);
+
+      denyBtn.classList.add('clicked');
+      denyBtn.innerHTML = '&#10006;';
+      denyBtn.style.backgroundColor = '#dc3545';
+
+      approveBtn.disabled = true;
+      employee.setAttribute('data-status', 'denied');
+    }
+
+    function resetButtons(btn) {
+      const box = btn.closest('.request-box');
+      const employees = box.querySelectorAll('.employee');
+
+      employees.forEach(emp => {
+        emp.removeAttribute('data-status');
+        const approveBtn = emp.querySelector('.approve');
+        const denyBtn = emp.querySelector('.deny');
+
+        approveBtn.classList.remove('clicked');
+        denyBtn.classList.remove('clicked');
+
+        approveBtn.innerHTML = 'Approve';
+        denyBtn.innerHTML = 'Deny';
+
+        approveBtn.style.backgroundColor = '#007bff';
+        denyBtn.style.backgroundColor = '#007bff';
+
+        approveBtn.disabled = false;
+        denyBtn.disabled = false;
+      });
+    }
+
+    function submitRequest(btn) {
+      const box = btn.closest('.request-box');
+      const employees = box.querySelectorAll('.employee');
+
+      employees.forEach(emp => {
+        const status = emp.getAttribute('data-status');
+        const requestId = emp.id.split("_")[1]; // Works for both "request_123" and "timeoff_123"
+
+        if (status === 'approved' || status === 'denied') {
+          fetch("/update_request_status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              request_id: requestId,
+              status: status.charAt(0).toUpperCase() + status.slice(1)
+            })
+          }).then(res => res.json())
+            .then(data => {
+              console.log(data.message);
+              emp.remove();
+            }).catch(err => {
+              alert("Error updating request.");
+              console.error(err);
+            });
+        }
+      });
+
+      alert('Request(s) have been submitted.');
+    }
+
+    function viewDetails() {
+      alert('Viewing details for the selected request.');
+    }
+  </script>
+</body>
+</html>

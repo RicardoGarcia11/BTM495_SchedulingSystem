@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Time Off</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/stafftimeoff.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('staff_dashboard') }}" >SCHEDULE</a></li>
+      <li><a href="{{ url_for('staff_shiftswap') }}">SHIFT SWAP</a></li>
+      <li><a href="{{ url_for('staff_createavailability') }}">CREATE AVAILABILITY</a></li>
+      <li><a href="{{ url_for('staff_timeoff') }}" class="active">TIME OFF</a></li>
+      <li><a href="{{ url_for('staff_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('staff_log_hours') }}">LOG HOURS</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Staff</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="confirmation">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form class="time-off-form" method="POST" enctype="multipart/form-data">
+      <label for="start_date">Start Date:</label>
+      <input type="date" id="start_date" name="start_date" required>
+
+      <label for="end_date">End Date:</label>
+      <input type="date" id="end_date" name="end_date" required>
+
+      <label for="reason">Reason:</label>
+      <select id="reason" name="reason" required>
+        <option value="">Select Reason</option>
+        <option value="Vacation">Vacation</option>
+        <option value="Sick">Sick</option>
+        <option value="Personal">Personal</option>
+        <option value="Family">Family</option>
+        <option value="Medical">Medical</option>
+      </select>
+
+      <label for="upload">Upload Supporting Document (optional):</label>
+      <input type="file" id="upload" name="upload">
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Manager Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests %}
+        <tr>
+          <td>{{ req.start_leave_date }}</td>
+          <td>{{ req.end_leave_date }}</td>
+          <td>{{ req.reason }}</td>
+          <td>{{ req.status }}</td>
+          <td>{{ req.notes or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No requests submitted yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="{{ url_for('staff_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+  </div>
+</body>
+</html>

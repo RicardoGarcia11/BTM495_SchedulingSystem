@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Dashboard - Create Schedule</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/managercreateschedule.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    .available-btn {
+      background-color: #d2b4f2;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .assigned-cell {
+      text-align: center;
+      background-color: #a9dfbf;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    .undo-btn {
+      margin-top: 4px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .flash {
+      padding: 10px;
+      margin: 20px auto;
+      width: 60%;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .flash.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .back-btn {
+  display: block;
+  text-align: center;
+  margin: 20px auto 0;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: #eeeeee;
+  color: #333;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 2px solid #8e44ec;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #8e44ec;
+  color: white;
+}
+  </style>
+
+  <script>
+    setTimeout(() => {
+      const flash = document.getElementById("flash-message");
+      if (flash) flash.style.display = "none";
+    }, 3000);
+  </script>
+
+  {% if success_redirect %}
+  <script>
+    setTimeout(() => {
+      window.location.href = "{{ url_for('manager_dashboard') }}";
+    }, 3000);
+  </script>
+  {% endif %}
+</head>
+<body>
+
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="flash-message">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('manager_dashboard') }}">SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_createschedule') }}"class="active">CREATE SCHEDULE</a></li>
+      <li><a href="{{ url_for('manager_requests') }}">REQUESTS</a></li>
+      <li><a href="{{ url_for('manager_messages') }}">MESSAGES</a></li>
+      <li><a href="{{ url_for('manager_reports') }}">REPORTS</a></li>
+      <li><a href="{{ url_for('manager_viewstaffavailability') }}">STAFF AVAILABILITY</a></li>
+    </ul>
+    <div class="dropdown">
+      <div class="dropdown-toggle">Manager</div>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('logout') }}">LOG OUT</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="schedule-container">
+    <h2>Create Weekly Schedule</h2>
+
+    <form method="POST" id="schedule-form">
+      <input type="hidden" name="schedule_data" id="schedule-data">
+
+      <table class="schedule-table">
+        <thead>
+          <tr id="days-row"></tr>
+        </thead>
+        <tbody>
+          {% for staff in staff_list %}
+          <tr>
+            <td class="employee-name">{{ staff.employee_name }}</td>
+            {% for day in range(7) %}
+            <td data-employee="{{ staff.employee_id }}" data-day="{{ day }}">
+              <button type="button" class="available-btn" onclick="assignCell(this)">Available</button>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button class="submit-btn" type="submit">Submit Schedule</button>
+      <a href="{{ url_for('manager_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+    </form>
+  </div>
+
+  <script>
+    function getWeekDates() {
+      const today = new Date();
+      const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        const current = new Date(monday);
+        current.setDate(monday.getDate() + i);
+        const weekday = current.toLocaleDateString(undefined, { weekday: 'short' });
+        const monthDay = current.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        weekDates.push(`${weekday} - ${monthDay}`);
+      }
+      return weekDates;
+    }
+
+    function assignCell(button) {
+      const td = button.parentElement;
+      const employeeId = td.getAttribute("data-employee");
+      const day = td.getAttribute("data-day");
+
+      td.innerHTML = `
+        <div class="assigned-cell" data-assigned="true">
+          Assigned<br>
+          <button type="button" class="undo-btn">Undo</button>
+        </div>
+      `;
+      td.setAttribute("data-employee", employeeId);
+      td.setAttribute("data-day", day);
+
+      const undoButton = td.querySelector('.undo-btn');
+      undoButton.onclick = () => {
+        td.innerHTML = `
+          <button type="button" class="available-btn"
+                  onclick="assignCell(this)">
+            Available
+          </button>
+        `;
+        td.setAttribute("data-employee", employeeId);
+        td.setAttribute("data-day", day);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const daysRow = document.getElementById('days-row');
+      const weekDates = getWeekDates();
+
+      const emptyTh = document.createElement('th');
+      emptyTh.textContent = "";
+      daysRow.appendChild(emptyTh);
+
+      weekDates.forEach(day => {
+        const th = document.createElement('th');
+        th.textContent = day;
+        daysRow.appendChild(th);
+      });
+
+      const submitBtn = document.querySelector('.submit-btn');
+      submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const assigned = [];
+        const cells = document.querySelectorAll('td[data-employee][data-day]');
+
+        cells.forEach(td => {
+          const assignedCell = td.querySelector('.assigned-cell');
+          if (assignedCell && assignedCell.dataset.assigned === "true") {
+            assigned.push({
+              employee_id: td.getAttribute("data-employee"),
+              day_index: td.getAttribute("data-day")
+            });
+          }
+        });
+
+        document.getElementById('schedule-data').value = JSON.stringify(assigned);
+        document.getElementById('schedule-form').submit();
+      });
+    });
+  </script>
+</body>
+</html>
