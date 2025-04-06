@@ -843,7 +843,36 @@ def manager_viewstaffavailability():
         Availability.shift_type
     ).join(User, Availability.employee_id == User.employee_id).order_by(Availability.employee_id, Availability.day_index).all()
 
-    return render_template("manager_viewstaffavailability.html", records=availability_records)
+    start_date = datetime(2025, 4, 6)  
+    day_index_map = {i: (start_date + timedelta(days=i)).strftime("%A, %B %-d") for i in range(14)}
+
+    shift_hours_map_weekday = {
+        "Morning": "11:00 AM - 3:00 PM",
+        "Afternoon": "3:00 PM - 6:30 PM",
+        "Evening": "6:30 PM - 10:00 PM"
+    }
+    shift_hours_map_weekend = {
+        "Morning": "11:00 AM - 4:00 PM",
+        "Afternoon": "4:00 PM - 8:00 PM",
+        "Evening": "8:00 PM - 12:00 AM"
+    }
+
+    formatted_records = []
+    for record in availability_records:
+        date = start_date + timedelta(days=record.day_index)
+        weekday = date.weekday() 
+        if weekday in [5, 6]:  
+            shift_hours = shift_hours_map_weekend.get(record.shift_type, record.shift_type)
+        else:
+            shift_hours = shift_hours_map_weekday.get(record.shift_type, record.shift_type)
+
+        formatted_records.append({
+            "employee_name": record.employee_name,
+            "date": date.strftime("%A, %B %-d"),
+            "shift_hours": shift_hours
+        })
+
+    return render_template("manager_viewstaffavailability.html", records=formatted_records)
 
 
 @app.route("/clear_availability", methods=["POST"])
