@@ -7,7 +7,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/staffloghours.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    
+    .no-shift-msg {
+      margin: 50px auto;
+      padding: 20px;
+      max-width: 500px;
+      background-color: #ffecec;
+      color: #b30000;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #f5c2c2;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -29,38 +39,41 @@
   </nav>
 
   <div class="log-hours-container">
-    <div class="log-box">
-      <h2>My Shift</h2>
-      <div class="shift-info">
-        <h3>11:00 AM – 5:00 PM</h3>
-        <p id="currentDate"></p>
-        <p>Service Staff</p>
+    {% if shift %}
+      <div class="log-box">
+        <h2>My Shift</h2>
+        <div class="shift-info">
+          <h3>{{ shift.start_time.strftime('%I:%M %p') }} – {{ shift.end_time.strftime('%I:%M %p') }}</h3>
+          <p>{{ shift.shift_date.strftime('%A, %b %d, %Y') }}</p>
+          <p>Service Staff</p>
+        </div>
+        <div class="time-display" id="currentTime"></div>
+        <div class="buttons">
+          <button id="clockInBtn" class="clock-btn">Clock In</button>
+          <button id="clockOutBtn" class="clock-btn">Clock Out</button>
+        </div>
+        <div id="lastLogTime"></div>
       </div>
-      <div class="time-display" id="currentTime"></div>
-      <div class="buttons">
-        <button id="clockInBtn" class="clock-btn">Clock In</button>
-        <button id="clockOutBtn" class="clock-btn">Clock Out</button>
+    {% else %}
+      <div class="no-shift-msg">
+        You have no shift assigned today. Please check your schedule or contact your manager.
       </div>
-      <div id="lastLogTime"></div>
-    </div>
+    {% endif %}
 
     <a href="{{ url_for('staff_dashboard') }}" class="back-btn">← Back to Dashboard</a>
   </div>
 
+  {% if shift %}
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const clockInBtn = document.getElementById('clockInBtn');
       const clockOutBtn = document.getElementById('clockOutBtn');
       const timeEl = document.getElementById('currentTime');
-      const dateEl = document.getElementById('currentDate');
       const lastLogEl = document.getElementById('lastLogTime');
-
       let clockedIn = sessionStorage.getItem("clockedIn") === "true";
 
       function updateTime() {
         const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-        dateEl.textContent = now.toLocaleDateString(undefined, options);
         timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
 
@@ -80,13 +93,9 @@
         .then(res => res.json())
         .then(data => {
           const message = data.message || data.error || "Action completed.";
-          alert(message);
           lastLogEl.textContent = message;
 
-          if (data.error) {
-            setTimeout(() => window.location.href = "/staff_dashboard", 100);
-            return;
-          }
+          if (data.error) return;
 
           if (action === 'clock_in') {
             clockedIn = true;
@@ -104,7 +113,7 @@
           updateButtonStates();
         })
         .catch(error => {
-          alert("Error logging hours.");
+          lastLogEl.textContent = "Error logging hours.";
           console.error(error);
         });
       }
@@ -117,5 +126,6 @@
       updateButtonStates();
     });
   </script>
+  {% endif %}
 </body>
 </html>

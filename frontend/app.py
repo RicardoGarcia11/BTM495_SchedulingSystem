@@ -204,7 +204,9 @@ def manager_createschedule():
                 import json
                 schedule_data = json.loads(request.form["schedule_data"])
 
-                start_date = datetime.today().date()
+                
+                today = datetime.today().date()
+                start_date = today - timedelta(days=today.weekday()) 
                 day_map = [start_date + timedelta(days=i) for i in range(7)]
                 total_hours = len(schedule_data) * 8
 
@@ -253,6 +255,7 @@ def manager_createschedule():
         return render_template("manager_createschedule.html", staff_list=staff_list)
 
     return redirect(url_for("manager_login"))
+
 
 
 
@@ -365,7 +368,7 @@ def staff_log_hours():
     if request.method == "GET":
         return render_template("staff_loghours.html", shift=shift)
 
-   
+    # Prevent POST if no shift today
     if not shift:
         return jsonify({"error": "You have no shift assigned today."}), 400
 
@@ -373,6 +376,15 @@ def staff_log_hours():
         data = request.get_json()
         action = data.get("action")
         now = datetime.now()
+
+        # ✅ Check if hours already logged today
+        existing_log = ClockRecord.query.filter(
+            ClockRecord.employee_id == employee_id,
+            db.func.date(ClockRecord.clockIN_time) == today
+        ).first()
+
+        if existing_log:
+            return jsonify({"error": "You've already logged hours for today."}), 400
 
         if action == "clock_in":
             session["clock_in_time"] = now.isoformat()
