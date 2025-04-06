@@ -192,7 +192,8 @@ def manager_login():
 @app.route("/manager_dashboard")
 def manager_dashboard():
     if 'logged_in' in session and session.get('user_type') == 'Manager':
-        return render_template("manager_dashboard.html")
+        now = datetime.today()
+        return render_template("manager_dashboard.html", now=now, timedelta=timedelta)
     else:
         return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
 
@@ -255,10 +256,6 @@ def manager_createschedule():
         return render_template("manager_createschedule.html", staff_list=staff_list)
 
     return redirect(url_for("manager_login"))
-
-
-
-
 
 @app.route("/manager_messages", methods=["GET"])
 def manager_messages():
