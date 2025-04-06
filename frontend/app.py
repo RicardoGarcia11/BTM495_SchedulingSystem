@@ -377,6 +377,19 @@ def manager_createschedule():
                 if shift_label == "Evening" and is_weekend and end_time == time(0, 0):
                     end_time = time(23, 59)
 
+                # Skip if a shift for same employee + time already exists
+                existing_shift = Shift.query.filter_by(
+                    employee_id=emp_id,
+                    shift_date=shift_date,
+                    start_time=start_time,
+                    end_time=end_time
+                ).first()
+                if existing_shift:
+                    user = User.query.get(emp_id)
+                    flash(f"{user.employee_name} is already assigned on {shift_date.strftime('%A %b %d')} for that shift.", "warning")
+                    continue
+
+
                 shift = Shift(
                     employee_id=emp_id,
                     shift_date=shift_date,
