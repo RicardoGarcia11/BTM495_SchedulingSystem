@@ -39,8 +39,9 @@
       <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
     </div>
     <div class="calendar-dates">
-      {% set first_day = datetime(year, now.month, 1).weekday() %}
-      {% set blanks = (first_day + 6) % 7 %}
+      {% set month_start = datetime(year, now.month, 1) %}
+      {% set first_day = month_start.weekday() %}
+      {% set blanks = first_day %}
   
       {% for i in range(blanks) %}
         <div class="calendar-cell empty"></div>
