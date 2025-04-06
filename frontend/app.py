@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask import Response 
 from collections import defaultdict
 from flask import render_template
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, text
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -252,12 +252,71 @@ def manager_login():
 
 @app.route("/manager_dashboard")
 def manager_dashboard():
-    if 'logged_in' in session and session.get('user_type') == 'Manager':
-        now = datetime.today()
-        today_date = now.date()
-        return render_template("manager_dashboard.html", now=now, today=today_date, timedelta=timedelta)
-    else:
-        return redirect(url_for("manager_dashboard", success="Schedule created successfully!"))
+    if 'logged_in' not in session or session.get('user_type') != 'Manager':
+        return redirect(url_for("login"))
+
+    now = datetime.today()
+    today = datetime.today()
+    month_start = datetime(now.year, now.month, 1)
+    next_month = (month_start + timedelta(days=32)).replace(day=1)
+
+    result = db.session.execute(text("""
+        SELECT shift_id, employee_id, shift_date, start_time, end_time
+        FROM shift
+    """))
+
+    assigned_map = {}
+
+    for row in result:
+        shift_id = row.shift_id
+        employee_id = row.employee_id
+        shift_date = row.shift_date
+        start_time_raw = row.start_time
+        end_time_raw = row.end_time
+
+        # Safely parse shift_date
+        if isinstance(shift_date, str):
+            try:
+                shift_date = datetime.fromisoformat(shift_date)
+            except ValueError:
+                shift_date = datetime.strptime(shift_date, "%Y-%m-%d %H:%M:%S.%f")
+
+        # Skip if not in this month
+        if not (month_start <= shift_date < next_month):
+            continue
+
+        # Safely parse start and end times
+        if isinstance(start_time_raw, str):
+            try:
+                start_time = datetime.fromisoformat(start_time_raw).time()
+            except ValueError:
+                start_time = datetime.strptime(start_time_raw, "%H:%M:%S.%f").time()
+        else:
+            start_time = start_time_raw
+
+        if isinstance(end_time_raw, str):
+            try:
+                end_time = datetime.fromisoformat(end_time_raw).time()
+            except ValueError:
+                end_time = datetime.strptime(end_time_raw, "%H:%M:%S.%f").time()
+        else:
+            end_time = end_time_raw
+
+        user = User.query.get(employee_id)
+        if user:
+            day = shift_date.day
+            if day not in assigned_map:
+                assigned_map[day] = []
+            assigned_map[day].append(f"{user.employee_name} ({start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')})")
+
+    return render_template(
+        "manager_dashboard.html",
+        now=now,
+        today=today,
+        timedelta=timedelta,
+        assigned_map=assigned_map
+    )
+
 
 @app.route("/manager_createschedule", methods=["GET", "POST"])
 def manager_createschedule():
