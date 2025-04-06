@@ -27,7 +27,7 @@
 
   <div class="requests-container">
 
-    <!-- SHIFT SWAP REQUESTS -->
+    
     <div class="request-box">
       <h3>Shift Swap Requests</h3>
       <div class="employee-list">
@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <!-- TIME OFF REQUESTS -->
+    
     <div class="request-box">
       <h3>Time Off Requests</h3>
       <div class="employee-list">
@@ -137,7 +137,7 @@
 
       employees.forEach(emp => {
         const status = emp.getAttribute('data-status');
-        const requestId = emp.id.split("_")[1]; // Works for both "request_123" and "timeoff_123"
+        const requestId = emp.id.split("_")[1]; 
 
         if (status === 'approved' || status === 'denied') {
           fetch("/update_request_status", {
