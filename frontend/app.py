@@ -17,6 +17,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.db_models_4 import db, User, Account, Shift, Schedule, Request, Message, TimeOff, ClockRecord, Availability, Manager, ServiceStaff, schedule_shift
 
 app = Flask(__name__, instance_relative_config=True)
+def get_two_week_dates():
+    today = datetime.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    return [(start_of_week + timedelta(days=i)) for i in range(14)]
 app.secret_key = "password"
 
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) 
@@ -729,11 +733,12 @@ def staff_createavailability():
 
             Availability.query.filter_by(employee_id=employee_id).delete()
 
-            for day_index, details in data.items():
+            for date_key, details in data.items():
+                date_obj = datetime.strptime(date_key, "%Y-%m-%d").date()
                 for shift in details["shifts"]:
                     availability = Availability(
                         employee_id=employee_id,
-                        day_index=int(day_index),
+                        day_index=date_obj.weekday(),
                         shift_type=shift
                     )
                     db.session.add(availability)
@@ -746,9 +751,10 @@ def staff_createavailability():
             db.session.rollback()
             return jsonify({"error": "Something went wrong."}), 500
 
+    week_dates = get_two_week_dates()
     existing_availability = Availability.query.filter_by(employee_id=employee_id).order_by(Availability.day_index).all()
-    
-    return render_template("staff_createavailability.html", availability=existing_availability)
+
+    return render_template("staff_createavailability.html", availability=existing_availability, week_dates=week_dates)
 
 @app.route("/manager_report_detail")
 def manager_report_detail():
